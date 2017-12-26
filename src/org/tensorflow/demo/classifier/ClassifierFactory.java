@@ -6,6 +6,6 @@ package org.tensorflow.demo.classifier;
 
 public abstract class ClassifierFactory {
     public static Classifier getInstance() {
-        return DefaultClassifier.getInstance();
+        return YoloClassifierv2.getInstance();
     }
 }
