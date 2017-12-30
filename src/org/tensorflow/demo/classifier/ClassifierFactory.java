@@ -5,7 +5,12 @@ package org.tensorflow.demo.classifier;
  */
 
 public abstract class ClassifierFactory {
-    public static Classifier getInstance() {
-        return YoloClassifierv2.getInstance();
+    public static Classifier getInstance(final String classifier) {
+        switch (classifier) {
+            case "YoloV2":
+                return YoloClassifierv2.getInstance();
+            default:
+                return DefaultClassifier.getInstance();
+        }
     }
 }

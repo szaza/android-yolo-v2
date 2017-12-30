@@ -55,7 +55,7 @@ public class DefaultClassifier implements Classifier {
     }
 
     // The shape of the output is [N, NUM_CLASSES], where N is the batch size.
-    public int getNumberOfClassesByShape(final Operation operation) {
+    public int getOutputSizeByShape(final Operation operation) {
         return (int) operation.output(0).shape().size(1);
     }
 

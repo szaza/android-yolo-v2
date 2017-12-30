@@ -14,9 +14,11 @@ public class Yolov2 {
     private float th;
     private float to;
     private final List<Float> classProbabilities;
+    private final List<Float> calculatedProbablilities;
 
     public Yolov2() {
         classProbabilities = new ArrayList();
+        calculatedProbablilities = new ArrayList();
     }
 
     public float getTx() {
@@ -65,5 +67,13 @@ public class Yolov2 {
 
     public void addProbability(Float probability) {
         classProbabilities.add(probability);
+    }
+
+    public List<Float> getCalculatedProbablilities() {
+        return calculatedProbablilities;
+    }
+
+    public void addCalculatedProbabilities(Float calculatedProbability) {
+        calculatedProbablilities.add(calculatedProbability);
     }
 }

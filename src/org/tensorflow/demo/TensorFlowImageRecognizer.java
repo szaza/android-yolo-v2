@@ -42,31 +42,32 @@ import static org.tensorflow.demo.Config.OUTPUT_NAME;
  * A classifier specialized to label images using TensorFlow.
  */
 public class TensorFlowImageRecognizer implements Recognizer {
-    private int numClasses;
+    private int outputSize;
     private Vector<String> labels;
     private boolean logStats = false;
     private TensorFlowInferenceInterface inferenceInterface;
 
-    private TensorFlowImageRecognizer() {}
+    private TensorFlowImageRecognizer() {
+    }
 
     /**
      * Initializes a native TensorFlow session for classifying images.
      *
-     * @param assetManager  The asset manager to be used to load assets.
+     * @param assetManager The asset manager to be used to load assets.
      * @throws IOException
      */
     public static Recognizer create(AssetManager assetManager) {
         TensorFlowImageRecognizer recognizer = new TensorFlowImageRecognizer();
         recognizer.labels = LabelUtil.readLabels(assetManager, LABEL_FILE);
         recognizer.inferenceInterface = new TensorFlowInferenceInterface(assetManager, MODEL_FILE);
-        recognizer.numClasses = ClassifierFactory.getInstance()
-                .getNumberOfClassesByShape(recognizer.inferenceInterface.graphOperation(OUTPUT_NAME));
+        recognizer.outputSize = ClassifierFactory.getInstance(Config.CLASSIFIER)
+                .getOutputSizeByShape(recognizer.inferenceInterface.graphOperation(OUTPUT_NAME));
         return recognizer;
     }
 
     @Override
     public List<Recognition> recognizeImage(final Bitmap bitmap) {
-        return ClassifierFactory.getInstance().classifyImage(runTensorFlow(bitmap), labels);
+        return ClassifierFactory.getInstance(Config.CLASSIFIER).classifyImage(runTensorFlow(bitmap), labels);
     }
 
     @Override
@@ -85,7 +86,7 @@ public class TensorFlowImageRecognizer implements Recognizer {
     }
 
     private float[] runTensorFlow(final Bitmap bitmap) {
-        final float[] tfOutput = new float[numClasses];
+        final float[] tfOutput = new float[outputSize];
         // Copy the input data into TensorFlow.
         inferenceInterface.feed(INPUT_NAME, processBitmap(bitmap), 1, INPUT_SIZE, INPUT_SIZE, 3);
 
@@ -101,11 +102,13 @@ public class TensorFlowImageRecognizer implements Recognizer {
     /**
      * Preprocess the image data from 0-255 int to normalized float based
      * on the provided parameters.
+     *
      * @param bitmap
      */
     private float[] processBitmap(final Bitmap bitmap) {
         int[] intValues = new int[INPUT_SIZE * INPUT_SIZE];
-        float[] floatValues = new float[INPUT_SIZE * INPUT_SIZE * 3];;
+        float[] floatValues = new float[INPUT_SIZE * INPUT_SIZE * 3];
+        ;
 
         bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
         for (int i = 0; i < intValues.length; ++i) {

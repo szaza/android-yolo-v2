@@ -17,7 +17,7 @@ public interface Classifier {
      * @param operation tensorflow operation object
      * @return the number of classes
      */
-    int getNumberOfClassesByShape(final Operation operation);
+    int getOutputSizeByShape(final Operation operation);
 
     /**
      * It classifies the object/objects on the image
