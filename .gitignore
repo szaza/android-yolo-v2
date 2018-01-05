@@ -39,4 +39,4 @@ proguard/
 captures/
 
 # Protobuf files
-.assets/*.pb
+# .assets/*.pb
