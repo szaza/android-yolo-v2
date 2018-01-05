@@ -2,10 +2,13 @@ package org.tensorflow.demo.classifier;
 
 import android.graphics.RectF;
 
+import org.apache.commons.math3.analysis.function.Sigmoid;
 import org.tensorflow.Operation;
 import org.tensorflow.demo.model.Recognition;
 import org.tensorflow.demo.model.Yolov2;
 import org.tensorflow.demo.util.Logger;
+import org.tensorflow.demo.util.math.ArgMax;
+import org.tensorflow.demo.util.math.SoftMax;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -21,10 +24,11 @@ import java.util.Vector;
 
 public class YoloClassifierv2 implements Classifier {
     private static final Logger LOGGER = new Logger();
-    private final static int SIZE = 7;
-    private final static int MAX_RECOGNIZED_CLASSES = 3;
+    private final static double anchors[] = {1.08,1.19,  3.42,4.41,  6.63,11.38,  9.42,5.11,  16.62,10.52};
+    private final static int SIZE = 13;
+    private final static int MAX_RECOGNIZED_CLASSES = 10;
     private final static float THRESHOLD = 0.1f;
-    private final static int MAX_RESULTS = 3;
+    private final static int MAX_RESULTS = 5;
     private final static int NUMBER_OF_BOUNDING_BOX = 5;
     private static YoloClassifierv2 classifier;
 
@@ -54,11 +58,13 @@ public class YoloClassifierv2 implements Classifier {
         Yolov2[][][] boundingBoxPerCell = new Yolov2[SIZE][SIZE][NUMBER_OF_BOUNDING_BOX];
         PriorityQueue<Recognition> priorityQueue = new PriorityQueue<>(MAX_RECOGNIZED_CLASSES, new RecognitionComparator());
 
-        for (int i=0; i<SIZE; i++) {        // SIZE * SIZE cells
-            for (int j=0; j<SIZE; j++) {
+        int offset = 0;
+        for (int cx=0; cx<SIZE; cx++) {        // SIZE * SIZE cells
+            for (int cy=0; cy<SIZE; cy++) {
                 for (int b=0; b<NUMBER_OF_BOUNDING_BOX; b++) {   // 5 bounding boxes per each cell
-                    boundingBoxPerCell[i][j][b] = getModel(tensorFlowOutput, numClass, i+j+b);
-                    getTopPriorities(boundingBoxPerCell[i][j][b], priorityQueue, labels);
+                    boundingBoxPerCell[cx][cy][b] = getModel(tensorFlowOutput, cx, cy, b, numClass, offset);
+                    calculateTopPredictions(boundingBoxPerCell[cx][cy][b], priorityQueue, labels);
+                    offset = offset + numClass + 5;
                 }
             }
         }
@@ -66,33 +72,36 @@ public class YoloClassifierv2 implements Classifier {
         return getRecognition(priorityQueue);
     }
 
-    private Yolov2 getModel(final float[] tensorFlowOutput, final int numClass, final int offset) {
-        int index =  (5 + numClass) * offset;
-
+    private Yolov2 getModel(final float[] tensorFlowOutput, int cx, int cy, int b, int numClass, int offset) {
         Yolov2 model = new Yolov2();
-        model.setTx(tensorFlowOutput[index]);
-        model.setTy(tensorFlowOutput[index+1]);
-        model.setTw(tensorFlowOutput[index+2]);
-        model.setTh(tensorFlowOutput[index+3]);
-        model.setTo(tensorFlowOutput[index+4]);
+        Sigmoid sigmoid = new Sigmoid();
+        model.setX((cx + sigmoid.value(tensorFlowOutput[offset])) * 32);
+        model.setY((cy + sigmoid.value(tensorFlowOutput[offset + 1])) * 32);
+        model.setW(Math.exp(tensorFlowOutput[offset + 2]) * anchors[2 * b] * 32);
+        model.setH(Math.exp(tensorFlowOutput[offset + 3]) * anchors[2 * b + 1] * 32);
+        model.setConfidence(sigmoid.value(tensorFlowOutput[offset + 4]));
 
-        for (int j=0; j<numClass; j++) {
-            model.addProbability(tensorFlowOutput[5 + index + j]);
-            model.addCalculatedProbabilities(tensorFlowOutput[5 + index + j] * tensorFlowOutput[index + 4]);
+        model.setClasses(new double[numClass]);
+
+        for (int probIndex=0; probIndex<numClass; probIndex++) {
+            model.getClasses()[probIndex] = tensorFlowOutput[probIndex + offset + 5];
         }
 
         return model;
     }
 
-    private void getTopPriorities(final Yolov2 boundingBox, final PriorityQueue<Recognition> priorityQueue,
+    private void calculateTopPredictions(final Yolov2 boundingBox, final PriorityQueue<Recognition> predictionQueue,
                                   final Vector<String> labels) {
-        for (int i=0; i<boundingBox.getCalculatedProbablilities().size(); i++) {
-            LOGGER.i("i: " + i + " - " + boundingBox.getCalculatedProbablilities().get(i));
-            if (boundingBox.getCalculatedProbablilities().get(i) > THRESHOLD) {
-                priorityQueue.add(new Recognition("" + i, labels.get(i), boundingBox.getCalculatedProbablilities().get(i),
-                        new RectF(boundingBox.getTx(), boundingBox.getTy(),
-                                boundingBox.getTx() + boundingBox.getTw(),
-                                boundingBox.getTy() + boundingBox.getTh())));
+        for (int i=0; i<boundingBox.getClasses().length; i++) {
+            ArgMax.Result argMax = new ArgMax(new SoftMax(boundingBox.getClasses()).getValue()).getResult();
+            double confidenceInClass = argMax.getMaxValue() * boundingBox.getConfidence();
+
+            if (confidenceInClass > THRESHOLD) {
+                predictionQueue.add(new Recognition("" + argMax.getIndex(), labels.get(argMax.getIndex()), (float) confidenceInClass,
+                        new RectF((float) (boundingBox.getX() - boundingBox.getW() / 2),
+                                (float) (boundingBox.getY() - boundingBox.getH() / 2),
+                                (float) boundingBox.getW(),
+                                (float) boundingBox.getH())));
             }
         }
     }

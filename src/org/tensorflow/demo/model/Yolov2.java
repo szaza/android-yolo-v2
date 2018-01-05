@@ -1,79 +1,62 @@
 package org.tensorflow.demo.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by Zoltan Szabo on 12/17/17.
  */
 
 public class Yolov2 {
-    private float tx;
-    private float ty;
-    private float tw;
-    private float th;
-    private float to;
-    private final List<Float> classProbabilities;
-    private final List<Float> calculatedProbablilities;
+    private double x;
+    private double y;
+    private double w;
+    private double h;
+    private double confidence;
+    private double[] classes;
 
-    public Yolov2() {
-        classProbabilities = new ArrayList();
-        calculatedProbablilities = new ArrayList();
+    public double getX() {
+        return x;
     }
 
-    public float getTx() {
-        return tx;
+    public void setX(double x) {
+        this.x = x;
     }
 
-    public void setTx(float tx) {
-        this.tx = tx;
+    public double getY() {
+        return y;
     }
 
-    public float getTy() {
-        return ty;
+    public void setY(double y) {
+        this.y = y;
     }
 
-    public void setTy(float ty) {
-        this.ty = ty;
+    public double getW() {
+        return w;
     }
 
-    public float getTw() {
-        return tw;
+    public void setW(double w) {
+        this.w = w;
     }
 
-    public void setTw(float tw) {
-        this.tw = tw;
+    public double getH() {
+        return h;
     }
 
-    public float getTh() {
-        return th;
+    public void setH(double h) {
+        this.h = h;
     }
 
-    public void setTh(float th) {
-        this.th = th;
+    public double getConfidence() {
+        return confidence;
     }
 
-    public float getTo() {
-        return to;
+    public void setConfidence(double confidence) {
+        this.confidence = confidence;
     }
 
-    public void setTo(float to) {
-        this.to = to;
+    public double[] getClasses() {
+        return classes;
     }
 
-    public List<Float> getClassProbabilities() {
-        return classProbabilities;
-    }
-
-    public void addProbability(Float probability) {
-        classProbabilities.add(probability);
-    }
-
-    public List<Float> getCalculatedProbablilities() {
-        return calculatedProbablilities;
-    }
-
-    public void addCalculatedProbabilities(Float calculatedProbability) {
-        calculatedProbablilities.add(calculatedProbability);
+    public void setClasses(double[] classes) {
+        this.classes = classes;
     }
 }

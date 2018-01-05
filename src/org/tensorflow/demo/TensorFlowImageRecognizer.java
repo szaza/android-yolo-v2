@@ -108,7 +108,6 @@ public class TensorFlowImageRecognizer implements Recognizer {
     private float[] processBitmap(final Bitmap bitmap) {
         int[] intValues = new int[INPUT_SIZE * INPUT_SIZE];
         float[] floatValues = new float[INPUT_SIZE * INPUT_SIZE * 3];
-        ;
 
         bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
         for (int i = 0; i < intValues.length; ++i) {

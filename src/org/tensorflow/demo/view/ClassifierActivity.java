@@ -67,6 +67,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     private boolean computing = false;
     private Matrix frameToCropTransform;
     private Matrix cropToFrameTransform;
+    private OverlayView overlayView;
     private ResultsView resultsView;
     private BorderedText borderedText;
     private long lastProcessingTimeMs;
@@ -91,6 +92,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
         recognizer = TensorFlowImageRecognizer.create(getAssets());
 
         resultsView = (ResultsView) findViewById(R.id.results);
+        overlayView = (OverlayView) findViewById(R.id.debug_overlay);
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
 
@@ -188,6 +190,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
                         cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
                         resultsView.setResults(results);
+                        overlayView.setResults(results);
                         requestRender();
                         computing = false;
                     }

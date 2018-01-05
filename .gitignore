@@ -37,3 +37,6 @@ proguard/
 
 # Android Studio captures folder
 captures/
+
+# Protobuf files
+.assets/*.pb
