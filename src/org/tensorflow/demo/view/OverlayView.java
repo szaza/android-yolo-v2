@@ -16,14 +16,17 @@ limitations under the License.
 package org.tensorflow.demo.view;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 
 import org.tensorflow.demo.Config;
+import org.tensorflow.demo.R;
 import org.tensorflow.demo.model.Recognition;
 
 import java.util.LinkedList;
@@ -36,12 +39,15 @@ public class OverlayView extends View {
     private final Paint paint;
     private final List<DrawCallback> callbacks = new LinkedList<DrawCallback>();
     private List<Recognition> results;
+    private float resultsViewHeight;
 
     public OverlayView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
         paint = new Paint();
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.GREEN);
+        resultsViewHeight = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                112, getResources().getDisplayMetrics());
     }
 
     public void addCallback(final DrawCallback callback) {
@@ -56,8 +62,7 @@ public class OverlayView extends View {
 
         if (Config.CLASSIFIER.startsWith("Yolo") && results != null) {
             for (final Recognition recog : results) {
-//                canvas.drawRect(reCalcSize(recog.getLocation()), paint);
-                canvas.drawRect(recog.getLocation(), paint);
+                canvas.drawRect(reCalcSize(recog.getLocation()), paint);
             }
         }
     }
@@ -75,19 +80,17 @@ public class OverlayView extends View {
     }
 
     private RectF reCalcSize(RectF rect) {
-        float size_multiplier_x = this.getWidth() / Config.INPUT_SIZE;
-        float size_multiplier_y = size_multiplier_x;
-        float offset_x = 0;
-        float offset_y = (this.getHeight() - Config.INPUT_SIZE * size_multiplier_y) / 2;
+        float sizeMultiplierX = (float) this.getWidth() / (float) Config.INPUT_SIZE;
+        float sizeMultiplierY = (float) (this.getHeight() - resultsViewHeight) / (float) Config.INPUT_SIZE;
 
-        float width = rect.right * size_multiplier_x;
-        float height = rect.bottom * size_multiplier_y;
+        float width = rect.right * sizeMultiplierX;
+        float height = rect.bottom * sizeMultiplierY;
 
-        float left = size_multiplier_x * rect.left + offset_x - width;
-        float top = size_multiplier_y * rect.top + offset_y - height;
+        float left = sizeMultiplierX * rect.left;
+        float top = sizeMultiplierY * rect.top + resultsViewHeight;
 
-        float right = left + 2 * width;
-        float bottom = top + 2 * height;
+        float right = left + width;
+        float bottom = top + height;
 
         return new RectF(left,top,right,bottom);
     }

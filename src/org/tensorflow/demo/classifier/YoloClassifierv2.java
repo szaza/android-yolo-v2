@@ -26,9 +26,9 @@ public class YoloClassifierv2 implements Classifier {
     private static final Logger LOGGER = new Logger();
     private final static double anchors[] = {1.08,1.19,  3.42,4.41,  6.63,11.38,  9.42,5.11,  16.62,10.52};
     private final static int SIZE = 13;
-    private final static int MAX_RECOGNIZED_CLASSES = 10;
-    private final static float THRESHOLD = 0.1f;
-    private final static int MAX_RESULTS = 5;
+    private final static int MAX_RECOGNIZED_CLASSES = 13;
+    private final static float THRESHOLD = 0.3f;
+    private final static int MAX_RESULTS = 10;
     private final static int NUMBER_OF_BOUNDING_BOX = 5;
     private static YoloClassifierv2 classifier;
 
@@ -59,8 +59,8 @@ public class YoloClassifierv2 implements Classifier {
         PriorityQueue<Recognition> priorityQueue = new PriorityQueue<>(MAX_RECOGNIZED_CLASSES, new RecognitionComparator());
 
         int offset = 0;
-        for (int cx=0; cx<SIZE; cx++) {        // SIZE * SIZE cells
-            for (int cy=0; cy<SIZE; cy++) {
+        for (int cy=0; cy<SIZE; cy++) {        // SIZE * SIZE cells
+            for (int cx=0; cx<SIZE; cx++) {
                 for (int b=0; b<NUMBER_OF_BOUNDING_BOX; b++) {   // 5 bounding boxes per each cell
                     boundingBoxPerCell[cx][cy][b] = getModel(tensorFlowOutput, cx, cy, b, numClass, offset);
                     calculateTopPredictions(boundingBoxPerCell[cx][cy][b], priorityQueue, labels);
