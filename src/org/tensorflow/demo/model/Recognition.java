@@ -14,7 +14,7 @@ public final class Recognition {
      * A unique identifier for what has been recognized. Specific to the class, not the instance of
      * the object.
      */
-    private final String id;
+    private final Integer id;
 
     /**
      * Display name for the recognition.
@@ -31,7 +31,7 @@ public final class Recognition {
      */
     private RectF location;
 
-    public Recognition(final String id, final String title,
+    public Recognition(final Integer id, final String title,
                        final Float confidence, final RectF location) {
         this.id = id;
         this.title = title;
@@ -39,7 +39,7 @@ public final class Recognition {
         this.location = location;
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 

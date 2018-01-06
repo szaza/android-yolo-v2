@@ -7,12 +7,8 @@ package org.tensorflow.demo.classifier;
 public abstract class ClassifierFactory {
     public static Classifier getInstance(final String classifier) {
         switch (classifier) {
-            case "Yolo":
-                return YoloClassifier.getInstance();
-            case "YoloV2":
-                return YoloClassifierv2.getInstance();
             default:
-                return DefaultClassifier.getInstance();
+                return YOLOClassifier.getInstance();
         }
     }
 }

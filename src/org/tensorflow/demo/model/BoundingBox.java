@@ -4,7 +4,7 @@ package org.tensorflow.demo.model;
  * Created by Zoltan Szabo on 12/17/17.
  */
 
-public class Yolov2 {
+public class BoundingBox {
     private double x;
     private double y;
     private double w;

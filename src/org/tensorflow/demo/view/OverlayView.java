@@ -16,7 +16,6 @@ limitations under the License.
 package org.tensorflow.demo.view;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -26,7 +25,6 @@ import android.util.TypedValue;
 import android.view.View;
 
 import org.tensorflow.demo.Config;
-import org.tensorflow.demo.R;
 import org.tensorflow.demo.model.Recognition;
 
 import java.util.LinkedList;
@@ -37,15 +35,17 @@ import java.util.List;
  */
 public class OverlayView extends View {
     private final Paint paint;
-    private final List<DrawCallback> callbacks = new LinkedList<DrawCallback>();
+    private final List<DrawCallback> callbacks = new LinkedList();
     private List<Recognition> results;
     private float resultsViewHeight;
 
     public OverlayView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
         paint = new Paint();
-        paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.GREEN);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                15, getResources().getDisplayMetrics()));
         resultsViewHeight = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 112, getResources().getDisplayMetrics());
     }
@@ -61,8 +61,10 @@ public class OverlayView extends View {
         }
 
         if (Config.CLASSIFIER.startsWith("Yolo") && results != null) {
-            for (final Recognition recog : results) {
-                canvas.drawRect(reCalcSize(recog.getLocation()), paint);
+            for (final Recognition recognition : results) {
+                RectF boxPosition = reCalcSize(recognition.getLocation());
+                canvas.drawRect(boxPosition, paint);
+                canvas.drawText(recognition.getTitle(), boxPosition.left, boxPosition.top, paint);
             }
         }
     }
@@ -76,12 +78,12 @@ public class OverlayView extends View {
      * Interface defining the callback for client classes.
      */
     public interface DrawCallback {
-        public void drawCallback(final Canvas canvas);
+        void drawCallback(final Canvas canvas);
     }
 
     private RectF reCalcSize(RectF rect) {
         float sizeMultiplierX = (float) this.getWidth() / (float) Config.INPUT_SIZE;
-        float sizeMultiplierY = (float) (this.getHeight() - resultsViewHeight) / (float) Config.INPUT_SIZE;
+        float sizeMultiplierY = (this.getHeight() - resultsViewHeight) / (float) Config.INPUT_SIZE;
 
         float width = rect.right * sizeMultiplierX;
         float height = rect.bottom * sizeMultiplierY;

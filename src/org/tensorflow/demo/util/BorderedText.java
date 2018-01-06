@@ -84,7 +84,7 @@ public class BorderedText {
     public void drawLines(Canvas canvas, final float posX, final float posY, Vector<String> lines) {
         int lineNum = 0;
         for (final String line : lines) {
-            drawText(canvas, posX, posY - getTextSize() * (lines.size() - lineNum - 1), line);
+            drawText(canvas, posX, posY + getTextSize() * lineNum, line);
             ++lineNum;
         }
     }

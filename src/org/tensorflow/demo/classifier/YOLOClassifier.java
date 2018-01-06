@@ -4,8 +4,8 @@ import android.graphics.RectF;
 
 import org.apache.commons.math3.analysis.function.Sigmoid;
 import org.tensorflow.Operation;
+import org.tensorflow.demo.model.BoundingBox;
 import org.tensorflow.demo.model.Recognition;
-import org.tensorflow.demo.model.Yolov2;
 import org.tensorflow.demo.util.Logger;
 import org.tensorflow.demo.util.math.ArgMax;
 import org.tensorflow.demo.util.math.SoftMax;
@@ -17,12 +17,11 @@ import java.util.PriorityQueue;
 import java.util.Vector;
 
 /**
- * This classifier has been written for Yolov2 model
+ * YoloV2 classifier
  *
  * Created by Zoltan Szabo on 12/17/17.
  */
-
-public class YoloClassifierv2 implements Classifier {
+public class YOLOClassifier implements Classifier {
     private static final Logger LOGGER = new Logger();
     private final static double anchors[] = {1.08,1.19,  3.42,4.41,  6.63,11.38,  9.42,5.11,  16.62,10.52};
     private final static int SIZE = 13;
@@ -30,13 +29,13 @@ public class YoloClassifierv2 implements Classifier {
     private final static float THRESHOLD = 0.3f;
     private final static int MAX_RESULTS = 10;
     private final static int NUMBER_OF_BOUNDING_BOX = 5;
-    private static YoloClassifierv2 classifier;
+    private static YOLOClassifier classifier;
 
-    private YoloClassifierv2() {}
+    private YOLOClassifier() {}
 
     public static Classifier getInstance() {
         if (classifier == null) {
-            classifier = new YoloClassifierv2();
+            classifier = new YOLOClassifier();
         }
 
         return  classifier;
@@ -55,7 +54,7 @@ public class YoloClassifierv2 implements Classifier {
      */
     public List<Recognition> classifyImage(final float[] tensorFlowOutput, final Vector<String> labels) {
         int numClass = (int) (tensorFlowOutput.length / (Math.pow(SIZE,2) * NUMBER_OF_BOUNDING_BOX) - 5);
-        Yolov2[][][] boundingBoxPerCell = new Yolov2[SIZE][SIZE][NUMBER_OF_BOUNDING_BOX];
+        BoundingBox[][][] boundingBoxPerCell = new BoundingBox[SIZE][SIZE][NUMBER_OF_BOUNDING_BOX];
         PriorityQueue<Recognition> priorityQueue = new PriorityQueue<>(MAX_RECOGNIZED_CLASSES, new RecognitionComparator());
 
         int offset = 0;
@@ -72,8 +71,8 @@ public class YoloClassifierv2 implements Classifier {
         return getRecognition(priorityQueue);
     }
 
-    private Yolov2 getModel(final float[] tensorFlowOutput, int cx, int cy, int b, int numClass, int offset) {
-        Yolov2 model = new Yolov2();
+    private BoundingBox getModel(final float[] tensorFlowOutput, int cx, int cy, int b, int numClass, int offset) {
+        BoundingBox model = new BoundingBox();
         Sigmoid sigmoid = new Sigmoid();
         model.setX((cx + sigmoid.value(tensorFlowOutput[offset])) * 32);
         model.setY((cy + sigmoid.value(tensorFlowOutput[offset + 1])) * 32);
@@ -90,14 +89,14 @@ public class YoloClassifierv2 implements Classifier {
         return model;
     }
 
-    private void calculateTopPredictions(final Yolov2 boundingBox, final PriorityQueue<Recognition> predictionQueue,
-                                  final Vector<String> labels) {
+    private void calculateTopPredictions(final BoundingBox boundingBox, final PriorityQueue<Recognition> predictionQueue,
+                                         final Vector<String> labels) {
         for (int i=0; i<boundingBox.getClasses().length; i++) {
             ArgMax.Result argMax = new ArgMax(new SoftMax(boundingBox.getClasses()).getValue()).getResult();
             double confidenceInClass = argMax.getMaxValue() * boundingBox.getConfidence();
 
             if (confidenceInClass > THRESHOLD) {
-                predictionQueue.add(new Recognition("" + argMax.getIndex(), labels.get(argMax.getIndex()), (float) confidenceInClass,
+                predictionQueue.add(new Recognition(argMax.getIndex(), labels.get(argMax.getIndex()), (float) confidenceInClass,
                         new RectF((float) (boundingBox.getX() - boundingBox.getW() / 2),
                                 (float) (boundingBox.getY() - boundingBox.getH() / 2),
                                 (float) boundingBox.getW(),

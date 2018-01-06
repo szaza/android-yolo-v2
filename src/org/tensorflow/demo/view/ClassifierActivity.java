@@ -22,7 +22,6 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.media.Image;
 import android.media.Image.Plane;
@@ -63,12 +62,10 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     private int[] rgbBytes = null;
     private Bitmap rgbFrameBitmap = null;
     private Bitmap croppedBitmap = null;
-    private Bitmap cropCopyBitmap;
     private boolean computing = false;
     private Matrix frameToCropTransform;
     private Matrix cropToFrameTransform;
     private OverlayView overlayView;
-    private ResultsView resultsView;
     private BorderedText borderedText;
     private long lastProcessingTimeMs;
 
@@ -91,8 +88,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
         recognizer = TensorFlowImageRecognizer.create(getAssets());
 
-        resultsView = (ResultsView) findViewById(R.id.results);
-        overlayView = (OverlayView) findViewById(R.id.debug_overlay);
+        overlayView = (OverlayView) findViewById(R.id.overlay);
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
 
@@ -142,7 +138,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
             }
             computing = true;
 
-            Trace.beginSection("imageAvailable");
+            //Trace.beginSection("imageAvailable");
 
             final Plane[] planes = image.getPlanes();
             fillBytes(planes, yuvBytes);
@@ -167,7 +163,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                 image.close();
             }
             LOGGER.e(e, "Exception!");
-            Trace.endSection();
+            //Trace.endSection();
             return;
         }
 
@@ -187,9 +183,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                         final long startTime = SystemClock.uptimeMillis();
                         final List<Recognition> results = recognizer.recognizeImage(croppedBitmap);
                         lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
-
-                        cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
-                        resultsView.setResults(results);
                         overlayView.setResults(results);
                         requestRender();
                         computing = false;
@@ -208,32 +201,19 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
         if (!isDebug()) {
             return;
         }
-        final Bitmap copy = cropCopyBitmap;
-        if (copy != null) {
-            final Matrix matrix = new Matrix();
-            final float scaleFactor = 2;
-            matrix.postScale(scaleFactor, scaleFactor);
-            matrix.postTranslate(
-                    canvas.getWidth() - copy.getWidth() * scaleFactor,
-                    canvas.getHeight() - copy.getHeight() * scaleFactor);
-            canvas.drawBitmap(copy, matrix, new Paint());
 
-            final Vector<String> lines = new Vector<String>();
-            if (recognizer != null) {
-                String statString = recognizer.getStatString();
-                String[] statLines = statString.split("\n");
-                for (String line : statLines) {
-                    lines.add(line);
-                }
+        final Vector<String> lines = new Vector();
+        if (recognizer != null) {
+            for (String line : recognizer.getStatString().split("\n")) {
+                lines.add(line);
             }
-
-            lines.add("Frame: " + previewWidth + "x" + previewHeight);
-            lines.add("Crop: " + copy.getWidth() + "x" + copy.getHeight());
-            lines.add("View: " + canvas.getWidth() + "x" + canvas.getHeight());
-            lines.add("Rotation: " + sensorOrientation);
-            lines.add("Inference time: " + lastProcessingTimeMs + "ms");
-
-            borderedText.drawLines(canvas, 10, canvas.getHeight() - 10, lines);
         }
+
+        lines.add("Frame: " + previewWidth + "x" + previewHeight);
+        lines.add("View: " + canvas.getWidth() + "x" + canvas.getHeight());
+        lines.add("Rotation: " + sensorOrientation);
+        lines.add("Inference time: " + lastProcessingTimeMs + "ms");
+
+        borderedText.drawLines(canvas, 10, 10, lines);
     }
 }

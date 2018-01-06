@@ -44,7 +44,7 @@ public abstract class CameraActivity extends Activity implements OnImageAvailabl
     private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
     private static final String PERMISSION_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-    private boolean debug = false;
+    private boolean debug = true;
 
     private Handler handler;
     private HandlerThread handlerThread;
@@ -192,14 +192,14 @@ public abstract class CameraActivity extends Activity implements OnImageAvailabl
     }
 
     public void requestRender() {
-        final OverlayView overlay = (OverlayView) findViewById(R.id.debug_overlay);
+        final OverlayView overlay = (OverlayView) findViewById(R.id.overlay);
         if (overlay != null) {
             overlay.postInvalidate();
         }
     }
 
     public void addCallback(final OverlayView.DrawCallback callback) {
-        final OverlayView overlay = (OverlayView) findViewById(R.id.debug_overlay);
+        final OverlayView overlay = (OverlayView) findViewById(R.id.overlay);
         if (overlay != null) {
             overlay.addCallback(callback);
         }

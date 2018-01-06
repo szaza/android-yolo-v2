@@ -248,7 +248,7 @@ public class CameraConnectionFragment extends Fragment {
 
         // Collect the supported resolutions that are at least as big as the preview Surface
         boolean exactSizeFound = false;
-        final List<Size> bigEnough = new ArrayList<Size>();
+        final List<Size> bigEnough = new ArrayList<>();
         final List<Size> tooSmall = new ArrayList<Size>();
         for (final Size option : choices) {
             if (option.equals(desiredSize)) {
