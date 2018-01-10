@@ -29,6 +29,7 @@ import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.SystemClock;
 import android.os.Trace;
+import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
 import android.view.Display;
@@ -39,16 +40,14 @@ import org.tensorflow.demo.TensorFlowImageRecognizer;
 import org.tensorflow.demo.model.Recognition;
 import org.tensorflow.demo.util.BorderedText;
 import org.tensorflow.demo.util.ImageUtils;
-import org.tensorflow.demo.util.Logger;
 
 import java.util.List;
 import java.util.Vector;
 
 import static org.tensorflow.demo.Config.INPUT_SIZE;
+import static org.tensorflow.demo.Config.LOGGING_TAG;
 
 public class ClassifierActivity extends CameraActivity implements OnImageAvailableListener {
-    private static final Logger LOGGER = new Logger();
-
     private boolean SAVE_PREVIEW_BITMAP = false;
     private boolean MAINTAIN_ASPECT = true;
     private Size DESIRED_PREVIEW_SIZE = new Size(640, 480);
@@ -95,11 +94,12 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
         final Display display = getWindowManager().getDefaultDisplay();
         final int screenOrientation = display.getRotation();
 
-        LOGGER.i("Sensor orientation: %d, Screen orientation: %d", rotation, screenOrientation);
+        Log.i(LOGGING_TAG, String.format("Sensor orientation: %d, Screen orientation: %d",
+                rotation, screenOrientation));
 
         sensorOrientation = rotation + screenOrientation;
 
-        LOGGER.i("Initializing at size %dx%d", previewWidth, previewHeight);
+        Log.i(LOGGING_TAG, String.format("Initializing at size %dx%d", previewWidth, previewHeight));
         rgbBytes = new int[previewWidth * previewHeight];
         rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Config.ARGB_8888);
         croppedBitmap = Bitmap.createBitmap(INPUT_SIZE, INPUT_SIZE, Config.ARGB_8888);
@@ -138,8 +138,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
             }
             computing = true;
 
-            //Trace.beginSection("imageAvailable");
-
             final Plane[] planes = image.getPlanes();
             fillBytes(planes, yuvBytes);
 
@@ -158,12 +156,11 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                     rgbBytes);
 
             image.close();
-        } catch (final Exception e) {
+        } catch (final Exception ex) {
             if (image != null) {
                 image.close();
             }
-            LOGGER.e(e, "Exception!");
-            //Trace.endSection();
+            Log.e("Exception: ", ex.getMessage());
             return;
         }
 
@@ -192,16 +189,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
         Trace.endSection();
     }
 
-    @Override
-    public void onSetDebug(boolean debug) {
-        recognizer.enableStatLogging(debug);
-    }
-
     private void renderDebug(final Canvas canvas) {
-        if (!isDebug()) {
-            return;
-        }
-
         final Vector<String> lines = new Vector();
         if (recognizer != null) {
             for (String line : recognizer.getStatString().split("\n")) {

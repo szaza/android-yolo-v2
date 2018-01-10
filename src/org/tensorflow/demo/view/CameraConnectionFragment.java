@@ -12,6 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ * =======================================================================
+ * Modified by Zoltán Szabó
  */
 
 package org.tensorflow.demo.view;
@@ -43,6 +45,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
@@ -53,7 +56,6 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import org.tensorflow.demo.R;
-import org.tensorflow.demo.util.Logger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,9 +65,9 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-public class CameraConnectionFragment extends Fragment {
-    private static final Logger LOGGER = new Logger();
+import static org.tensorflow.demo.Config.LOGGING_TAG;
 
+public class CameraConnectionFragment extends Fragment {
     /**
      * The camera preview size will be chosen to be the smallest frame by pixel size capable of
      * containing a DESIRED_SIZE x DESIRED_SIZE square.
@@ -263,22 +265,22 @@ public class CameraConnectionFragment extends Fragment {
             }
         }
 
-        LOGGER.i("Desired size: " + desiredSize + ", min size: " + minSize + "x" + minSize);
-        LOGGER.i("Valid preview sizes: [" + TextUtils.join(", ", bigEnough) + "]");
-        LOGGER.i("Rejected preview sizes: [" + TextUtils.join(", ", tooSmall) + "]");
+        Log.i(LOGGING_TAG, String.format("Desired size: " + desiredSize + ", min size: " + minSize + "x" + minSize));
+        Log.i(LOGGING_TAG,String.format("Valid preview sizes: [" + TextUtils.join(", ", bigEnough) + "]"));
+        Log.i(LOGGING_TAG, String.format("Rejected preview sizes: [" + TextUtils.join(", ", tooSmall) + "]"));
 
         if (exactSizeFound) {
-            LOGGER.i("Exact size match found.");
+            Log.i(LOGGING_TAG, "Exact size match found.");
             return desiredSize;
         }
 
         // Pick the smallest of those, assuming we found any
         if (bigEnough.size() > 0) {
             final Size chosenSize = Collections.min(bigEnough, new CompareSizesByArea());
-            LOGGER.i("Chosen size: " + chosenSize.getWidth() + "x" + chosenSize.getHeight());
+            Log.i(LOGGING_TAG, String.format("Chosen size: " + chosenSize.getWidth() + "x" + chosenSize.getHeight()));
             return chosenSize;
         } else {
-            LOGGER.e("Couldn't find any suitable preview size");
+            Log.e(LOGGING_TAG, "Couldn't find any suitable preview size");
             return choices[0];
         }
     }
@@ -401,8 +403,8 @@ public class CameraConnectionFragment extends Fragment {
 
                 CameraConnectionFragment.this.cameraId = cameraId;
             }
-        } catch (final CameraAccessException e) {
-            LOGGER.e(e, "Exception!");
+        } catch (final CameraAccessException ex) {
+            Log.e(LOGGING_TAG, "Exception: " + ex.getMessage());
         } catch (final NullPointerException e) {
             // Currently an NPE is thrown when the Camera2API is used but not supported on the
             // device this code runs.
@@ -429,10 +431,10 @@ public class CameraConnectionFragment extends Fragment {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
             }
             manager.openCamera(cameraId, stateCallback, backgroundHandler);
-        } catch (final CameraAccessException e) {
-            LOGGER.e(e, "Exception!");
-        } catch (final InterruptedException e) {
-            throw new RuntimeException("Interrupted while trying to lock camera opening.", e);
+        } catch (final CameraAccessException ex) {
+            Log.e(LOGGING_TAG, "Exception: " + ex.getMessage());
+        } catch (final InterruptedException ex) {
+            throw new RuntimeException("Interrupted while trying to lock camera opening.", ex);
         }
     }
 
@@ -479,8 +481,8 @@ public class CameraConnectionFragment extends Fragment {
             backgroundThread.join();
             backgroundThread = null;
             backgroundHandler = null;
-        } catch (final InterruptedException e) {
-            LOGGER.e(e, "Exception!");
+        } catch (final InterruptedException ex) {
+            Log.e(LOGGING_TAG, "Exception: " + ex.getMessage());
         }
     }
 
@@ -502,7 +504,8 @@ public class CameraConnectionFragment extends Fragment {
             previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             previewRequestBuilder.addTarget(surface);
 
-            LOGGER.i("Opening camera preview: " + previewSize.getWidth() + "x" + previewSize.getHeight());
+            Log.i(LOGGING_TAG, String.format("Opening camera preview: "
+                    + previewSize.getWidth() + "x" + previewSize.getHeight()));
 
             // Create the reader for the preview frames.
             previewReader =
@@ -539,8 +542,8 @@ public class CameraConnectionFragment extends Fragment {
                                 previewRequest = previewRequestBuilder.build();
                                 captureSession.setRepeatingRequest(
                                         previewRequest, captureCallback, backgroundHandler);
-                            } catch (final CameraAccessException e) {
-                                LOGGER.e(e, "Exception!");
+                            } catch (final CameraAccessException ex) {
+                                Log.e(LOGGING_TAG,  "Exception: " + ex.getMessage());
                             }
                         }
 
@@ -550,8 +553,8 @@ public class CameraConnectionFragment extends Fragment {
                         }
                     },
                     null);
-        } catch (final CameraAccessException e) {
-            LOGGER.e(e, "Exception!");
+        } catch (final CameraAccessException ex) {
+            Log.e(LOGGING_TAG, "Exception: " + ex.getMessage());
         }
     }
 

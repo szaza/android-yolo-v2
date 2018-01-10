@@ -16,16 +16,14 @@
 package org.tensorflow.demo.util;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.media.Image;
 import android.os.Environment;
-
-import junit.framework.Assert;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.nio.ByteBuffer;
+
+import static org.tensorflow.demo.Config.LOGGING_TAG;
 
 /**
  * Utility class for manipulating images.
@@ -35,7 +33,6 @@ public class ImageUtils {
     // are normalized to eight bits.
     static final int kMaxChannelValue = 262143;
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = new Logger();
 
     /**
      * Utility method to compute the allocated size in bytes of a YUV420SP image
@@ -60,43 +57,26 @@ public class ImageUtils {
     public static void saveBitmap(final Bitmap bitmap) {
         final String root =
                 Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "tensorflow";
-        LOGGER.i("Saving %dx%d bitmap to %s.", bitmap.getWidth(), bitmap.getHeight(), root);
+        Log.i(LOGGING_TAG,String.format("Saving %dx%d bitmap to %s.", bitmap.getWidth(), bitmap.getHeight(), root));
         final File myDir = new File(root);
 
         if (!myDir.mkdirs()) {
-            LOGGER.i("Make dir failed");
+            Log.i(LOGGING_TAG, "Make dir failed");
         }
 
-        final String fname = "preview.png";
-        final File file = new File(myDir, fname);
+        final File file = new File(myDir, "preview.png");
         if (file.exists()) {
             file.delete();
         }
+
         try {
             final FileOutputStream out = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.PNG, 99, out);
             out.flush();
             out.close();
-        } catch (final Exception e) {
-            LOGGER.e(e, "Exception!");
+        } catch (final Exception ex) {
+            Log.e(LOGGING_TAG, "Exception: " + ex.getMessage());
         }
-    }
-
-
-    public static int[] convertImageToBitmap(Image image, int[] output, byte[][] cachedYuvBytes) {
-        if (cachedYuvBytes == null || cachedYuvBytes.length != 3) {
-            cachedYuvBytes = new byte[3][];
-        }
-        Image.Plane[] planes = image.getPlanes();
-        fillBytes(planes, cachedYuvBytes);
-
-        final int yRowStride = planes[0].getRowStride();
-        final int uvRowStride = planes[1].getRowStride();
-        final int uvPixelStride = planes[1].getPixelStride();
-
-        convertYUV420ToARGB8888(cachedYuvBytes[0], cachedYuvBytes[1], cachedYuvBytes[2],
-                image.getWidth(), image.getHeight(), yRowStride, uvRowStride, uvPixelStride, output);
-        return output;
     }
 
     public static void convertYUV420ToARGB8888(byte[] yData, byte[] uData, byte[] vData, int width, int height,
@@ -147,44 +127,6 @@ public class ImageUtils {
         nB = (nB >> 10) & 0xff;
 
         return 0xff000000 | (nR << 16) | (nG << 8) | nB;
-    }
-
-    private static void fillBytes(final Image.Plane[] planes, final byte[][] yuvBytes) {
-        // Because of the variable row stride it's not possible to know in
-        // advance the actual necessary dimensions of the yuv planes.
-        for (int i = 0; i < planes.length; ++i) {
-            final ByteBuffer buffer = planes[i].getBuffer();
-            if (yuvBytes[i] == null || yuvBytes[i].length != buffer.capacity()) {
-                yuvBytes[i] = new byte[buffer.capacity()];
-            }
-            buffer.get(yuvBytes[i]);
-        }
-    }
-
-
-    public static void cropAndRescaleBitmap(final Bitmap src, final Bitmap dst, int sensorOrientation) {
-        Assert.assertEquals(dst.getWidth(), dst.getHeight());
-        final float minDim = Math.min(src.getWidth(), src.getHeight());
-
-        final Matrix matrix = new Matrix();
-
-        // We only want the center square out of the original rectangle.
-        final float translateX = -Math.max(0, (src.getWidth() - minDim) / 2);
-        final float translateY = -Math.max(0, (src.getHeight() - minDim) / 2);
-        matrix.preTranslate(translateX, translateY);
-
-        final float scaleFactor = dst.getHeight() / minDim;
-        matrix.postScale(scaleFactor, scaleFactor);
-
-        // Rotate around the center if necessary.
-        if (sensorOrientation != 0) {
-            matrix.postTranslate(-dst.getWidth() / 2.0f, -dst.getHeight() / 2.0f);
-            matrix.postRotate(sensorOrientation);
-            matrix.postTranslate(dst.getWidth() / 2.0f, dst.getHeight() / 2.0f);
-        }
-
-        final Canvas canvas = new Canvas(dst);
-        canvas.drawBitmap(src, matrix, null);
     }
 
     public static Matrix getTransformationMatrix(

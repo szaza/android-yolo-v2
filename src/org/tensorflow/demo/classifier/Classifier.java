@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.Vector;
 
 /**
+ * Classifier interface
+ *
  * Created by Zoltan Szabo on 12/17/17.
  */
-
 public interface Classifier {
     /**
      * Gets the number of classes based on the tensor shape

@@ -3,7 +3,6 @@ package org.tensorflow.demo.model;
 /**
  * Created by Zoltan Szabo on 12/17/17.
  */
-
 import android.graphics.RectF;
 
 /**

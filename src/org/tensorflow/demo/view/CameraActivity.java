@@ -26,32 +26,28 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.util.Size;
-import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.tensorflow.demo.R;
-import org.tensorflow.demo.util.Logger;
 
 import java.nio.ByteBuffer;
 
-public abstract class CameraActivity extends Activity implements OnImageAvailableListener {
-    private static final Logger LOGGER = new Logger();
+import static org.tensorflow.demo.Config.LOGGING_TAG;
 
+public abstract class CameraActivity extends Activity implements OnImageAvailableListener {
     private static final int PERMISSIONS_REQUEST = 1;
 
     private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
     private static final String PERMISSION_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-
-    private boolean debug = true;
 
     private Handler handler;
     private HandlerThread handlerThread;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
-        LOGGER.d("onCreate " + this);
         super.onCreate(null);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -65,14 +61,7 @@ public abstract class CameraActivity extends Activity implements OnImageAvailabl
     }
 
     @Override
-    public synchronized void onStart() {
-        LOGGER.d("onStart " + this);
-        super.onStart();
-    }
-
-    @Override
     public synchronized void onResume() {
-        LOGGER.d("onResume " + this);
         super.onResume();
 
         handlerThread = new HandlerThread("inference");
@@ -82,10 +71,7 @@ public abstract class CameraActivity extends Activity implements OnImageAvailabl
 
     @Override
     public synchronized void onPause() {
-        LOGGER.d("onPause " + this);
-
         if (!isFinishing()) {
-            LOGGER.d("Requesting finish");
             finish();
         }
 
@@ -94,23 +80,11 @@ public abstract class CameraActivity extends Activity implements OnImageAvailabl
             handlerThread.join();
             handlerThread = null;
             handler = null;
-        } catch (final InterruptedException e) {
-            LOGGER.e(e, "Exception!");
+        } catch (final InterruptedException ex) {
+            Log.e(LOGGING_TAG, "Exception: " + ex.getMessage());
         }
 
         super.onPause();
-    }
-
-    @Override
-    public synchronized void onStop() {
-        LOGGER.d("onStop " + this);
-        super.onStop();
-    }
-
-    @Override
-    public synchronized void onDestroy() {
-        LOGGER.d("onDestroy " + this);
-        super.onDestroy();
     }
 
     protected synchronized void runInBackground(final Runnable r) {
@@ -180,15 +154,11 @@ public abstract class CameraActivity extends Activity implements OnImageAvailabl
         for (int i = 0; i < planes.length; ++i) {
             final ByteBuffer buffer = planes[i].getBuffer();
             if (yuvBytes[i] == null) {
-                LOGGER.d("Initializing buffer %d at size %d", i, buffer.capacity());
+                Log.d(LOGGING_TAG, String.format("Initializing buffer %d at size %d", i, buffer.capacity()));
                 yuvBytes[i] = new byte[buffer.capacity()];
             }
             buffer.get(yuvBytes[i]);
         }
-    }
-
-    public boolean isDebug() {
-        return debug;
     }
 
     public void requestRender() {
@@ -203,20 +173,6 @@ public abstract class CameraActivity extends Activity implements OnImageAvailabl
         if (overlay != null) {
             overlay.addCallback(callback);
         }
-    }
-
-    public void onSetDebug(final boolean debug) {
-    }
-
-    @Override
-    public boolean onKeyDown(final int keyCode, final KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            debug = !debug;
-            requestRender();
-            onSetDebug(debug);
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
     }
 
     protected abstract void onPreviewSizeChosen(final Size size, final int rotation);

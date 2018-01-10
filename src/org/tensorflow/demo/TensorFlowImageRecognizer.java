@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================
 Modified by Zoltan Szabo
-2017 12 17
 */
 
 package org.tensorflow.demo;
@@ -22,9 +21,9 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
-import org.tensorflow.demo.classifier.ClassifierFactory;
+import org.tensorflow.demo.classifier.YOLOClassifier;
 import org.tensorflow.demo.model.Recognition;
-import org.tensorflow.demo.util.LabelUtil;
+import org.tensorflow.demo.util.LabelProvider;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,7 +33,6 @@ import static org.tensorflow.demo.Config.IMAGE_MEAN;
 import static org.tensorflow.demo.Config.IMAGE_STD;
 import static org.tensorflow.demo.Config.INPUT_NAME;
 import static org.tensorflow.demo.Config.INPUT_SIZE;
-import static org.tensorflow.demo.Config.LABEL_FILE;
 import static org.tensorflow.demo.Config.MODEL_FILE;
 import static org.tensorflow.demo.Config.OUTPUT_NAME;
 
@@ -44,7 +42,6 @@ import static org.tensorflow.demo.Config.OUTPUT_NAME;
 public class TensorFlowImageRecognizer implements Recognizer {
     private int outputSize;
     private Vector<String> labels;
-    private boolean logStats = false;
     private TensorFlowInferenceInterface inferenceInterface;
 
     private TensorFlowImageRecognizer() {
@@ -58,21 +55,17 @@ public class TensorFlowImageRecognizer implements Recognizer {
      */
     public static Recognizer create(AssetManager assetManager) {
         TensorFlowImageRecognizer recognizer = new TensorFlowImageRecognizer();
-        recognizer.labels = LabelUtil.readLabels(assetManager, LABEL_FILE);
-        recognizer.inferenceInterface = new TensorFlowInferenceInterface(assetManager, MODEL_FILE);
-        recognizer.outputSize = ClassifierFactory.getInstance(Config.CLASSIFIER)
+        recognizer.labels = LabelProvider.readLabels(assetManager);
+        recognizer.inferenceInterface = new TensorFlowInferenceInterface(assetManager,
+                "file:///android_asset/" + MODEL_FILE);
+        recognizer.outputSize = YOLOClassifier.getInstance()
                 .getOutputSizeByShape(recognizer.inferenceInterface.graphOperation(OUTPUT_NAME));
         return recognizer;
     }
 
     @Override
     public List<Recognition> recognizeImage(final Bitmap bitmap) {
-        return ClassifierFactory.getInstance(Config.CLASSIFIER).classifyImage(runTensorFlow(bitmap), labels);
-    }
-
-    @Override
-    public void enableStatLogging(boolean logStats) {
-        this.logStats = logStats;
+        return YOLOClassifier.getInstance().classifyImage(runTensorFlow(bitmap), labels);
     }
 
     @Override
@@ -91,7 +84,7 @@ public class TensorFlowImageRecognizer implements Recognizer {
         inferenceInterface.feed(INPUT_NAME, processBitmap(bitmap), 1, INPUT_SIZE, INPUT_SIZE, 3);
 
         // Run the inference call.
-        inferenceInterface.run(new String[]{OUTPUT_NAME}, logStats);
+        inferenceInterface.run(new String[]{OUTPUT_NAME});
 
         // Copy the output Tensor back into the output array.
         inferenceInterface.fetch(OUTPUT_NAME, tfOutput);

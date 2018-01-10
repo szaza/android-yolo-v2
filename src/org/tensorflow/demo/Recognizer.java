@@ -27,8 +27,6 @@ import java.util.List;
 public interface Recognizer {
     List<Recognition> recognizeImage(Bitmap bitmap);
 
-    void enableStatLogging(final boolean debug);
-
     String getStatString();
 
     void close();

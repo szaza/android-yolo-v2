@@ -1,6 +1,10 @@
 package org.tensorflow.demo.util.math;
 
 /**
+ * Implementation of the SoftMax function.
+ * For more information please read this article:
+ * https://en.wikipedia.org/wiki/Softmax_function
+ *
  * Created by Zoltan Szabo on 1/5/18.
  */
 
@@ -31,5 +35,4 @@ public class SoftMax {
 
         return params;
     }
-
 }

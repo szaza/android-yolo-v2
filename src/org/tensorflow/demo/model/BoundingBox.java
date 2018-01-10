@@ -1,14 +1,15 @@
 package org.tensorflow.demo.model;
 
 /**
+ * Model to store the data of a bounding box
+ *
  * Created by Zoltan Szabo on 12/17/17.
  */
-
 public class BoundingBox {
     private double x;
     private double y;
-    private double w;
-    private double h;
+    private double width;
+    private double height;
     private double confidence;
     private double[] classes;
 
@@ -28,20 +29,20 @@ public class BoundingBox {
         this.y = y;
     }
 
-    public double getW() {
-        return w;
+    public double getWidth() {
+        return width;
     }
 
-    public void setW(double w) {
-        this.w = w;
+    public void setWidth(double width) {
+        this.width = width;
     }
 
-    public double getH() {
-        return h;
+    public double getHeight() {
+        return height;
     }
 
-    public void setH(double h) {
-        this.h = h;
+    public void setHeight(double height) {
+        this.height = height;
     }
 
     public double getConfidence() {

@@ -1,9 +1,10 @@
 package org.tensorflow.demo.util.math;
 
 /**
+ * ArgMax function to select the higher value and its index from the array.
+ *
  * Created by Zoltan Szabo on 1/5/18.
  */
-
 public class ArgMax {
 
     private double[] params;

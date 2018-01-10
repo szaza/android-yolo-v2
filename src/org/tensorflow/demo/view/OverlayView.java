@@ -11,7 +11,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-==============================================================================*/
+==============================================================================
+
+Modified by Zoltán Szabó
+*/
 
 package org.tensorflow.demo.view;
 
@@ -55,13 +58,13 @@ public class OverlayView extends View {
     }
 
     @Override
-    public synchronized void draw(final Canvas canvas) {
+    public synchronized void onDraw(final Canvas canvas) {
         for (final DrawCallback callback : callbacks) {
             callback.drawCallback(canvas);
         }
 
-        if (Config.CLASSIFIER.startsWith("Yolo") && results != null) {
-            for (final Recognition recognition : results) {
+        if (results != null) {
+            for (Recognition recognition : results) {
                 RectF boxPosition = reCalcSize(recognition.getLocation());
                 canvas.drawRect(boxPosition, paint);
                 canvas.drawText(recognition.getTitle(), boxPosition.left, boxPosition.top, paint);
@@ -94,6 +97,6 @@ public class OverlayView extends View {
         float right = left + width;
         float bottom = top + height;
 
-        return new RectF(left,top,right,bottom);
+        return new RectF(left, top, right, bottom);
     }
 }
