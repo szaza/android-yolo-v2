@@ -12,8 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Modified by Zoltan Szabo
  */
 
 package org.tensorflow.demo.view;
@@ -28,18 +26,15 @@ import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.SystemClock;
-import android.os.Trace;
 import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
-import android.view.Display;
 
 import org.tensorflow.demo.R;
-import org.tensorflow.demo.Recognizer;
 import org.tensorflow.demo.TensorFlowImageRecognizer;
 import org.tensorflow.demo.model.Recognition;
-import org.tensorflow.demo.util.BorderedText;
 import org.tensorflow.demo.util.ImageUtils;
+import org.tensorflow.demo.view.components.BorderedText;
 
 import java.util.List;
 import java.util.Vector;
@@ -47,13 +42,15 @@ import java.util.Vector;
 import static org.tensorflow.demo.Config.INPUT_SIZE;
 import static org.tensorflow.demo.Config.LOGGING_TAG;
 
+/**
+ * Classifier activity class
+ * Modified by Zoltan Szabo
+ */
 public class ClassifierActivity extends CameraActivity implements OnImageAvailableListener {
-    private boolean SAVE_PREVIEW_BITMAP = false;
     private boolean MAINTAIN_ASPECT = true;
-    private Size DESIRED_PREVIEW_SIZE = new Size(640, 480);
     private float TEXT_SIZE_DIP = 10;
 
-    private Recognizer recognizer;
+    private TensorFlowImageRecognizer recognizer;
     private Integer sensorOrientation;
     private int previewWidth = 0;
     private int previewHeight = 0;
@@ -69,16 +66,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     private long lastProcessingTimeMs;
 
     @Override
-    protected int getLayoutId() {
-        return R.layout.camera_connection_fragment;
-    }
-
-    @Override
-    protected Size getDesiredPreviewFrameSize() {
-        return DESIRED_PREVIEW_SIZE;
-    }
-
-    @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
         final float textSizePx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 TEXT_SIZE_DIP, getResources().getDisplayMetrics());
@@ -91,8 +78,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
         previewWidth = size.getWidth();
         previewHeight = size.getHeight();
 
-        final Display display = getWindowManager().getDefaultDisplay();
-        final int screenOrientation = display.getRotation();
+        final int screenOrientation = getWindowManager().getDefaultDisplay().getRotation();
 
         Log.i(LOGGING_TAG, String.format("Sensor orientation: %d, Screen orientation: %d",
                 rotation, screenOrientation));
@@ -112,13 +98,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
         yuvBytes = new byte[3][];
 
-        addCallback(
-                new OverlayView.DrawCallback() {
-                    @Override
-                    public void drawCallback(final Canvas canvas) {
-                        renderDebug(canvas);
-                    }
-                });
+        addCallback((final Canvas canvas) -> renderAdditionalInformation(canvas));
     }
 
     @Override
@@ -165,31 +145,25 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
         }
 
         rgbFrameBitmap.setPixels(rgbBytes, 0, previewWidth, 0, 0, previewWidth, previewHeight);
-        final Canvas canvas = new Canvas(croppedBitmap);
-        canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
+        new Canvas(croppedBitmap).drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
 
-        // For examining the actual TF input.
-        if (SAVE_PREVIEW_BITMAP) {
-            ImageUtils.saveBitmap(croppedBitmap);
-        }
-
-        runInBackground(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        final long startTime = SystemClock.uptimeMillis();
-                        final List<Recognition> results = recognizer.recognizeImage(croppedBitmap);
-                        lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
-                        overlayView.setResults(results);
-                        requestRender();
-                        computing = false;
-                    }
-                });
-
-        Trace.endSection();
+        runInBackground(() -> {
+            final long startTime = SystemClock.uptimeMillis();
+            final List<Recognition> results = recognizer.recognizeImage(croppedBitmap);
+            lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
+            overlayView.setResults(results);
+            requestRender();
+            computing = false;
+        });
     }
 
-    private void renderDebug(final Canvas canvas) {
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        recognizer.close();
+    }
+
+    private void renderAdditionalInformation(final Canvas canvas) {
         final Vector<String> lines = new Vector();
         if (recognizer != null) {
             for (String line : recognizer.getStatString().split("\n")) {

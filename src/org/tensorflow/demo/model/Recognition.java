@@ -1,12 +1,28 @@
+/*
+ * Copyright 2018 The Android YOLOv2 sample application Authors.
+ *
+ *     This file is part of Android YOLOv2 sample application.
+ * Android YOLOv2 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Android YOLOv2 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Android YOLOv2. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.tensorflow.demo.model;
 
-/**
- * Created by Zoltan Szabo on 12/17/17.
- */
 import android.graphics.RectF;
 
 /**
- * An immutable result returned by a Recognizer describing what was recognized.
+ * An immutable result returned by a recognizer describing what was recognized.
+ * Created by Zoltan Szabo on 12/17/17.
+ * URL: https://github.com/szaza/android-yolov2
  */
 public final class Recognition {
     /**
@@ -14,20 +30,8 @@ public final class Recognition {
      * the object.
      */
     private final Integer id;
-
-    /**
-     * Display name for the recognition.
-     */
     private final String title;
-
-    /**
-     * A sortable score for how good the recognition is relative to others. Higher should be better.
-     */
     private final Float confidence;
-
-    /**
-     * Optional location within the source image for the location of the recognized object.
-     */
     private RectF location;
 
     public Recognition(final Integer id, final String title,
@@ -60,23 +64,11 @@ public final class Recognition {
 
     @Override
     public String toString() {
-        String resultString = "";
-        if (id != null) {
-            resultString += "[" + id + "] ";
-        }
-
-        if (title != null) {
-            resultString += title + " ";
-        }
-
-        if (confidence != null) {
-            resultString += String.format("(%.1f%%) ", confidence * 100.0f);
-        }
-
-        if (location != null) {
-            resultString += location + " ";
-        }
-
-        return resultString.trim();
+        return "Recognition{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", confidence=" + confidence +
+                ", location=" + location +
+                '}';
     }
 }

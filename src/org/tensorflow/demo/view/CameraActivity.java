@@ -18,7 +18,6 @@ package org.tensorflow.demo.view;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.pm.PackageManager;
 import android.media.Image.Plane;
 import android.media.ImageReader.OnImageAvailableListener;
@@ -37,11 +36,12 @@ import java.nio.ByteBuffer;
 
 import static org.tensorflow.demo.Config.LOGGING_TAG;
 
+/**
+ * Camera activity class.
+ * Modified by Zoltan Szabo
+ */
 public abstract class CameraActivity extends Activity implements OnImageAvailableListener {
     private static final int PERMISSIONS_REQUEST = 1;
-
-    private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
-    private static final String PERMISSION_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
     private Handler handler;
     private HandlerThread handlerThread;
@@ -87,15 +87,15 @@ public abstract class CameraActivity extends Activity implements OnImageAvailabl
         super.onPause();
     }
 
-    protected synchronized void runInBackground(final Runnable r) {
+    protected synchronized void runInBackground(final Runnable runnable) {
         if (handler != null) {
-            handler.post(r);
+            handler.post(runnable);
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(
-            final int requestCode, final String[] permissions, final int[] grantResults) {
+    public void onRequestPermissionsResult(final int requestCode, final String[] permissions,
+                                           final int[] grantResults) {
         switch (requestCode) {
             case PERMISSIONS_REQUEST: {
                 if (grantResults.length > 0
@@ -111,8 +111,8 @@ public abstract class CameraActivity extends Activity implements OnImageAvailabl
 
     private boolean hasPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return checkSelfPermission(PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED
-                    && checkSelfPermission(PERMISSION_STORAGE) == PackageManager.PERMISSION_GRANTED;
+            return checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+                    && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         } else {
             return true;
         }
@@ -120,31 +120,24 @@ public abstract class CameraActivity extends Activity implements OnImageAvailabl
 
     private void requestPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (shouldShowRequestPermissionRationale(PERMISSION_CAMERA)
-                    || shouldShowRequestPermissionRationale(PERMISSION_STORAGE)) {
+            if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
+                    || shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 Toast.makeText(CameraActivity.this,
                         "Camera AND storage permission are required for this demo", Toast.LENGTH_LONG).show();
             }
-            requestPermissions(new String[]{PERMISSION_CAMERA, PERMISSION_STORAGE}, PERMISSIONS_REQUEST);
+            requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST);
         }
     }
 
     protected void setFragment() {
-        final Fragment fragment =
-                CameraConnectionFragment.newInstance(
-                        new CameraConnectionFragment.ConnectionCallback() {
-                            @Override
-                            public void onPreviewSizeChosen(final Size size, final int rotation) {
-                                CameraActivity.this.onPreviewSizeChosen(size, rotation);
-                            }
-                        },
-                        this,
-                        getLayoutId(),
-                        getDesiredPreviewFrameSize());
+        CameraConnectionFragment cameraConnectionFragment = new CameraConnectionFragment();
+        cameraConnectionFragment.addConnectionListener((final Size size, final int rotation) ->
+                CameraActivity.this.onPreviewSizeChosen(size, rotation));
+        cameraConnectionFragment.addImageAvailableListener(this);
 
         getFragmentManager()
                 .beginTransaction()
-                .replace(R.id.container, fragment)
+                .replace(R.id.container, cameraConnectionFragment)
                 .commit();
     }
 
@@ -176,8 +169,4 @@ public abstract class CameraActivity extends Activity implements OnImageAvailabl
     }
 
     protected abstract void onPreviewSizeChosen(final Size size, final int rotation);
-
-    protected abstract int getLayoutId();
-
-    protected abstract Size getDesiredPreviewFrameSize();
 }

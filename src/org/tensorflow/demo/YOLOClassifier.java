@@ -1,4 +1,21 @@
-package org.tensorflow.demo.classifier;
+/*
+ * Copyright 2018 The Android YOLOv2 sample application Authors.
+ *
+ *     This file is part of Android YOLOv2 sample application.
+ * Android YOLOv2 is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Android YOLOv2 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Android YOLOv2. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.tensorflow.demo;
 
 import android.graphics.RectF;
 
@@ -20,8 +37,9 @@ import java.util.Vector;
  * https://arxiv.org/pdf/1612.08242.pdf
  *
  * Created by Zoltan Szabo on 12/17/17.
+ * https://github.com/szaza/android-yolov2
  */
-public class YOLOClassifier implements Classifier {
+public class YOLOClassifier {
     private final static double anchors[] = {1.08,1.19,  3.42,4.41,  6.63,11.38,  9.42,5.11,  16.62,10.52};
     private final static int SIZE = 13;
     private final static int MAX_RECOGNIZED_CLASSES = 13;
@@ -32,7 +50,7 @@ public class YOLOClassifier implements Classifier {
 
     private YOLOClassifier() {}
 
-    public static Classifier getInstance() {
+    public static YOLOClassifier getInstance() {
         if (classifier == null) {
             classifier = new YOLOClassifier();
         }
@@ -40,15 +58,23 @@ public class YOLOClassifier implements Classifier {
         return  classifier;
     }
 
-    @Override
+    /**
+     * Gets the number of classes based on the tensor shape
+     *
+     * @param operation tensorflow operation object
+     * @return the number of classes
+     */
     public int getOutputSizeByShape(final Operation operation) {
         return (int) (operation.output(0).shape().size(3) * Math.pow(SIZE,2));
     }
 
-    @Override
     /**
-     * The output is 13x13x125
+     * It classifies the object/objects on the image
+     *
+     * @param tensorFlowOutput output from the tensorflow, it is a 13x13x125 tensor
      * 125 = (numClass +  Tx, Ty, Tw, Th, To) * 5 - cause we have 5 boxes per each cell
+     * @param labels a string vector with the labels
+     * @return a list of recognition objects
      */
     public List<Recognition> classifyImage(final float[] tensorFlowOutput, final Vector<String> labels) {
         int numClass = (int) (tensorFlowOutput.length / (Math.pow(SIZE,2) * NUMBER_OF_BOUNDING_BOX) - 5);

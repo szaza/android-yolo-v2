@@ -1,18 +1,16 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================
-Modified by Zoltan Szabo
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
 */
 
 package org.tensorflow.demo;
@@ -21,7 +19,6 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
-import org.tensorflow.demo.classifier.YOLOClassifier;
 import org.tensorflow.demo.model.Recognition;
 import org.tensorflow.demo.util.LabelProvider;
 
@@ -38,8 +35,9 @@ import static org.tensorflow.demo.Config.OUTPUT_NAME;
 
 /**
  * A classifier specialized to label images using TensorFlow.
+ * Modified by Zoltan Szabo
  */
-public class TensorFlowImageRecognizer implements Recognizer {
+public class TensorFlowImageRecognizer {
     private int outputSize;
     private Vector<String> labels;
     private TensorFlowInferenceInterface inferenceInterface;
@@ -53,7 +51,7 @@ public class TensorFlowImageRecognizer implements Recognizer {
      * @param assetManager The asset manager to be used to load assets.
      * @throws IOException
      */
-    public static Recognizer create(AssetManager assetManager) {
+    public static TensorFlowImageRecognizer create(AssetManager assetManager) {
         TensorFlowImageRecognizer recognizer = new TensorFlowImageRecognizer();
         recognizer.labels = LabelProvider.readLabels(assetManager);
         recognizer.inferenceInterface = new TensorFlowInferenceInterface(assetManager,
@@ -63,17 +61,14 @@ public class TensorFlowImageRecognizer implements Recognizer {
         return recognizer;
     }
 
-    @Override
     public List<Recognition> recognizeImage(final Bitmap bitmap) {
         return YOLOClassifier.getInstance().classifyImage(runTensorFlow(bitmap), labels);
     }
 
-    @Override
     public String getStatString() {
         return inferenceInterface.getStatString();
     }
 
-    @Override
     public void close() {
         inferenceInterface.close();
     }
