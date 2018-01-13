@@ -35,6 +35,7 @@ import java.util.List;
  * Modified by Zoltan Szabo
  */
 public class OverlayView extends View {
+    private final static float OVERLAP_THRESHOLD = 0.5F;
     private final Paint paint;
     private final List<DrawCallback> callbacks = new LinkedList();
     private List<Recognition> results;
@@ -61,11 +62,19 @@ public class OverlayView extends View {
             callback.drawCallback(canvas);
         }
 
-        if (results != null) {
-            for (Recognition recognition : results) {
-                RectF boxPosition = reCalcSize(recognition.getLocation());
-                canvas.drawRect(boxPosition, paint);
-                canvas.drawText(recognition.getTitle(), boxPosition.left, boxPosition.top, paint);
+        if (results != null && results.size() > 0) {
+            RectF bestBox = reCalcSize(results.get(0).getLocation());
+            drawBoundingBox(canvas, bestBox, "0:" + results.get(0).getTitle() + ":"
+                    + String.format("%.2f", results.get(0).getConfidence()));
+
+            if (results.size() > 1) {
+                for (int i = 1; i < results.size(); i++) {
+                    RectF box = reCalcSize(results.get(i).getLocation());
+                    if (getIntersectionProportion(bestBox, box) < OVERLAP_THRESHOLD) {
+                        drawBoundingBox(canvas, box, i + ":" +results.get(i).getTitle() + ":"
+                                + String.format("%.2f", results.get(0).getConfidence()));
+                    }
+                }
             }
         }
     }
@@ -80,6 +89,30 @@ public class OverlayView extends View {
      */
     public interface DrawCallback {
         void drawCallback(final Canvas canvas);
+    }
+
+    private void drawBoundingBox(final Canvas canvas, RectF box, String title) {
+        canvas.drawRect(box, paint);
+        canvas.drawText(title, box.left, box.top, paint);
+    }
+
+    private float getIntersectionProportion(RectF primaryShape, RectF secondaryShape) {
+        if (overlaps(primaryShape, secondaryShape)) {
+            float intersectionSurface = Math.max(0, Math.min(primaryShape.right, secondaryShape.right) - Math.max(primaryShape.left, secondaryShape.left)) *
+                    Math.max(0, Math.min(primaryShape.bottom, secondaryShape.bottom) - Math.max(primaryShape.top, secondaryShape.top));
+
+            float surfacePrimary = Math.abs(primaryShape.right - primaryShape.left) * Math.abs(primaryShape.bottom - primaryShape.top);
+
+            return intersectionSurface / surfacePrimary;
+        }
+
+        return 0f;
+
+    }
+
+    private boolean overlaps(RectF primary, RectF secondary) {
+        return primary.left < secondary.right && primary.right > secondary.left
+                && primary.top < secondary.bottom && primary.bottom > secondary.top;
     }
 
     private RectF reCalcSize(RectF rect) {

@@ -44,7 +44,7 @@ public class YOLOClassifier {
     private final static int SIZE = 13;
     private final static int MAX_RECOGNIZED_CLASSES = 13;
     private final static float THRESHOLD = 0.3f;
-    private final static int MAX_RESULTS = 10;
+    private final static int MAX_RESULTS = 15;
     private final static int NUMBER_OF_BOUNDING_BOX = 5;
     private static YOLOClassifier classifier;
 
