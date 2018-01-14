@@ -9,7 +9,7 @@ This android application uses YOLOv2 model for object detection. It uses tensorf
 
 Please read the paper for more information about the YOLOv2 model: [YOLO9000 Better, Faster, Stronger](https://arxiv.org/pdf/1612.08242.pdf)
 
-A device running Android 5.0 (API 21) or higher is required to run the demo due to the use of the camera2 API.
+A device running Android 7.0 (API 24) or higher is required to run the demo due to the use of the camera2 API.
 
 How it works?
 
