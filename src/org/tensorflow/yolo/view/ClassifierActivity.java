@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tensorflow.demo.view;
+package org.tensorflow.yolo.view;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -30,17 +30,17 @@ import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
 
-import org.tensorflow.demo.R;
-import org.tensorflow.demo.TensorFlowImageRecognizer;
-import org.tensorflow.demo.model.Recognition;
-import org.tensorflow.demo.util.ImageUtils;
-import org.tensorflow.demo.view.components.BorderedText;
+import org.tensorflow.yolo.R;
+import org.tensorflow.yolo.TensorFlowImageRecognizer;
+import org.tensorflow.yolo.model.Recognition;
+import org.tensorflow.yolo.util.ImageUtils;
+import org.tensorflow.yolo.view.components.BorderedText;
 
 import java.util.List;
 import java.util.Vector;
 
-import static org.tensorflow.demo.Config.INPUT_SIZE;
-import static org.tensorflow.demo.Config.LOGGING_TAG;
+import static org.tensorflow.yolo.Config.INPUT_SIZE;
+import static org.tensorflow.yolo.Config.LOGGING_TAG;
 
 /**
  * Classifier activity class

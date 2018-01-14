@@ -13,7 +13,7 @@
 * limitations under the License.
 */
 
-package org.tensorflow.demo.view;
+package org.tensorflow.yolo.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -24,10 +24,10 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 
-import org.tensorflow.demo.Config;
-import org.tensorflow.demo.model.BoxPosition;
-import org.tensorflow.demo.model.Recognition;
-import org.tensorflow.demo.util.ClassAttrProvider;
+import org.tensorflow.yolo.Config;
+import org.tensorflow.yolo.model.BoxPosition;
+import org.tensorflow.yolo.model.Recognition;
+import org.tensorflow.yolo.util.ClassAttrProvider;
 
 import java.util.LinkedList;
 import java.util.List;

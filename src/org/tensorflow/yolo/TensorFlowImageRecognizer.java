@@ -13,25 +13,25 @@
 * limitations under the License.
 */
 
-package org.tensorflow.demo;
+package org.tensorflow.yolo;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
-import org.tensorflow.demo.model.Recognition;
-import org.tensorflow.demo.util.ClassAttrProvider;
+import org.tensorflow.yolo.model.Recognition;
+import org.tensorflow.yolo.util.ClassAttrProvider;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
 
-import static org.tensorflow.demo.Config.IMAGE_MEAN;
-import static org.tensorflow.demo.Config.IMAGE_STD;
-import static org.tensorflow.demo.Config.INPUT_NAME;
-import static org.tensorflow.demo.Config.INPUT_SIZE;
-import static org.tensorflow.demo.Config.MODEL_FILE;
-import static org.tensorflow.demo.Config.OUTPUT_NAME;
+import static org.tensorflow.yolo.Config.IMAGE_MEAN;
+import static org.tensorflow.yolo.Config.IMAGE_STD;
+import static org.tensorflow.yolo.Config.INPUT_NAME;
+import static org.tensorflow.yolo.Config.INPUT_SIZE;
+import static org.tensorflow.yolo.Config.MODEL_FILE;
+import static org.tensorflow.yolo.Config.OUTPUT_NAME;
 
 /**
  * A classifier specialized to label images using TensorFlow.

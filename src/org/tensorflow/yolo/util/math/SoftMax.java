@@ -15,48 +15,42 @@
  * You should have received a copy of the GNU General Public License
  * along with Android YOLOv2. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.tensorflow.demo.util.math;
+package org.tensorflow.yolo.util.math;
 
 /**
- * ArgMax function to select the higher value and its index from the array.
+ * Implementation of the SoftMax function.
+ * For more information please read this article:
+ * https://en.wikipedia.org/wiki/Softmax_function
  *
  * Created by Zoltan Szabo on 1/5/18.
  * URL: https://github.com/szaza/android-yolov2
  */
-public class ArgMax {
 
-    private double[] params;
+public class SoftMax {
+    private final double[] params;
 
-    public ArgMax(double[] params) {
+    public SoftMax(double[] params) {
         this.params = params;
     }
 
-    public Result getResult() {
-        int maxIndex = 0;
+    public double[] getValue() {
+        double sum = 0;
+
         for (int i=0; i<params.length; i++) {
-            if (params[maxIndex] < params[i]) {
-                maxIndex = i;
+            params[i] = Math.exp(params[i]);
+            sum += params[i];
+        }
+
+        if (Double.isNaN(sum) || sum < 0) {
+            for (int i=0; i<params.length; i++) {
+                params[i] = 1.0 / params.length;
+            }
+        } else {
+            for (int i=0; i<params.length; i++) {
+                params[i] = params[i] / sum;
             }
         }
 
-        return new Result(maxIndex, params[maxIndex]);
-    }
-
-    public class Result {
-        private int index;
-        private double maxValue;
-
-        public Result(int index, double maxValue) {
-            this.index = index;
-            this.maxValue = maxValue;
-        }
-
-        public int getIndex() {
-            return index;
-        }
-
-        public double getMaxValue() {
-            return maxValue;
-        }
+        return params;
     }
 }

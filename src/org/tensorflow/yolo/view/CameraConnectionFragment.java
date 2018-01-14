@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tensorflow.demo.view;
+package org.tensorflow.yolo.view;
 
 import android.Manifest;
 import android.app.Activity;
@@ -48,9 +48,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import org.tensorflow.demo.R;
-import org.tensorflow.demo.util.comparator.CompareSizesByArea;
-import org.tensorflow.demo.view.components.ErrorDialog;
+import org.tensorflow.yolo.R;
+import org.tensorflow.yolo.util.comparator.CompareSizesByArea;
+import org.tensorflow.yolo.view.components.ErrorDialog;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import static org.tensorflow.demo.Config.LOGGING_TAG;
+import static org.tensorflow.yolo.Config.LOGGING_TAG;
 
 /**
  * Camera connection fragment

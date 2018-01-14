@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tensorflow.demo.view;
+package org.tensorflow.yolo.view;
 
 import android.Manifest;
 import android.app.Activity;
@@ -30,11 +30,11 @@ import android.util.Size;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import org.tensorflow.demo.R;
+import org.tensorflow.yolo.R;
 
 import java.nio.ByteBuffer;
 
-import static org.tensorflow.demo.Config.LOGGING_TAG;
+import static org.tensorflow.yolo.Config.LOGGING_TAG;
 
 /**
  * Camera activity class.

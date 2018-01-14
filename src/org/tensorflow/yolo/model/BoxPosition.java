@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Android YOLOv2. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.tensorflow.demo.model;
+package org.tensorflow.yolo.model;
 
 /**
  * Model to store the position of the bounding boxes

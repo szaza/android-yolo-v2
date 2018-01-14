@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Android YOLOv2. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.tensorflow.demo.view.components;
+package org.tensorflow.yolo.view.components;
 
 import android.app.Activity;
 import android.app.AlertDialog;

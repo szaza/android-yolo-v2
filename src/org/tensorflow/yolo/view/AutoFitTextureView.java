@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tensorflow.demo.view;
+package org.tensorflow.yolo.view;
 
 import android.content.Context;
 import android.util.AttributeSet;

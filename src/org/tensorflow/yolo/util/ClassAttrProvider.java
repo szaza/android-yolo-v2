@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with Android YOLOv2. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.tensorflow.demo.util;
+package org.tensorflow.yolo.util;
 
 import android.content.res.AssetManager;
 import android.graphics.Color;
 
-import org.tensorflow.demo.Config;
+import org.tensorflow.yolo.Config;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -13,7 +13,7 @@
 * limitations under the License.
 */
 
-package org.tensorflow.demo.view.components;
+package org.tensorflow.yolo.view.components;
 
 import android.graphics.Canvas;
 import android.graphics.Color;

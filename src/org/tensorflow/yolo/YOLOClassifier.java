@@ -15,25 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with Android YOLOv2. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.tensorflow.demo;
-
-import android.util.Log;
+package org.tensorflow.yolo;
 
 import org.apache.commons.math3.analysis.function.Sigmoid;
 import org.tensorflow.Operation;
-import org.tensorflow.demo.model.BoundingBox;
-import org.tensorflow.demo.model.BoxPosition;
-import org.tensorflow.demo.model.Recognition;
-import org.tensorflow.demo.util.math.ArgMax;
-import org.tensorflow.demo.util.math.SoftMax;
+import org.tensorflow.yolo.model.BoundingBox;
+import org.tensorflow.yolo.model.BoxPosition;
+import org.tensorflow.yolo.model.Recognition;
+import org.tensorflow.yolo.util.math.ArgMax;
+import org.tensorflow.yolo.util.math.SoftMax;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Vector;
-
-import static org.tensorflow.demo.Config.LOGGING_TAG;
 
 /**
  * Implementation of YOLOv2 classifier based on the article:
@@ -43,7 +39,7 @@ import static org.tensorflow.demo.Config.LOGGING_TAG;
  * https://github.com/szaza/android-yolov2
  */
 public class YOLOClassifier {
-    private final static float OVERLAP_THRESHOLD = 0.65f;
+    private final static float OVERLAP_THRESHOLD = 0.5f;
     private final static double anchors[] = {1.08,1.19,  3.42,4.41,  6.63,11.38,  9.42,5.11,  16.62,10.52};
     private final static int SIZE = 13;
     private final static int MAX_RECOGNIZED_CLASSES = 13;
@@ -164,8 +160,6 @@ public class YOLOClassifier {
                     Math.max(0, Math.min(primaryShape.getBottom(), secondaryShape.getBottom()) - Math.max(primaryShape.getTop(), secondaryShape.getTop()));
 
             float surfacePrimary = Math.abs(primaryShape.getRight() - primaryShape.getLeft()) * Math.abs(primaryShape.getBottom() - primaryShape.getTop());
-
-            Log.i(LOGGING_TAG, "intersection: " + intersectionSurface / surfacePrimary);
 
             return intersectionSurface / surfacePrimary;
         }
