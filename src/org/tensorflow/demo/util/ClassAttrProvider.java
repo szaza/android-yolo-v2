@@ -71,6 +71,13 @@ public final class ClassAttrProvider {
             rgb[i%3] += name[i];
         }
 
+        //Hue saturation
+        for (int i=0; i<rgb.length; i++) {
+            if (rgb[i] < 120) {
+                rgb[i] += 120;
+            }
+        }
+
         return Color.rgb(rgb[0], rgb[1], rgb[2]);
     }
 

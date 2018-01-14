@@ -17,6 +17,8 @@
  */
 package org.tensorflow.demo;
 
+import android.util.Log;
+
 import org.apache.commons.math3.analysis.function.Sigmoid;
 import org.tensorflow.Operation;
 import org.tensorflow.demo.model.BoundingBox;
@@ -31,6 +33,8 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Vector;
 
+import static org.tensorflow.demo.Config.LOGGING_TAG;
+
 /**
  * Implementation of YOLOv2 classifier based on the article:
  * https://arxiv.org/pdf/1612.08242.pdf
@@ -39,7 +43,7 @@ import java.util.Vector;
  * https://github.com/szaza/android-yolov2
  */
 public class YOLOClassifier {
-    private final static float OVERLAP_THRESHOLD = 0.5F;
+    private final static float OVERLAP_THRESHOLD = 0.65f;
     private final static double anchors[] = {1.08,1.19,  3.42,4.41,  6.63,11.38,  9.42,5.11,  16.62,10.52};
     private final static int SIZE = 13;
     private final static int MAX_RECOGNIZED_CLASSES = 13;
@@ -139,7 +143,13 @@ public class YOLOClassifier {
 
             for (int i = 0; i < Math.min(priorityQueue.size(), MAX_RESULTS); ++i) {
                 Recognition recognition = priorityQueue.poll();
-                if (getIntersectionProportion(bestRecognition.getLocation(), recognition.getLocation()) < OVERLAP_THRESHOLD) {
+                boolean overlaps = false;
+                for (Recognition previousRecognition : recognitions) {
+                    overlaps = overlaps || (getIntersectionProportion(previousRecognition.getLocation(),
+                            recognition.getLocation()) > OVERLAP_THRESHOLD);
+                }
+
+                if (!overlaps) {
                     recognitions.add(recognition);
                 }
             }
@@ -154,6 +164,8 @@ public class YOLOClassifier {
                     Math.max(0, Math.min(primaryShape.getBottom(), secondaryShape.getBottom()) - Math.max(primaryShape.getTop(), secondaryShape.getTop()));
 
             float surfacePrimary = Math.abs(primaryShape.getRight() - primaryShape.getLeft()) * Math.abs(primaryShape.getBottom() - primaryShape.getTop());
+
+            Log.i(LOGGING_TAG, "intersection: " + intersectionSurface / surfacePrimary);
 
             return intersectionSurface / surfacePrimary;
         }
