@@ -20,7 +20,7 @@ import android.graphics.Bitmap;
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 import org.tensorflow.demo.model.Recognition;
-import org.tensorflow.demo.util.LabelProvider;
+import org.tensorflow.demo.util.ClassAttrProvider;
 
 import java.io.IOException;
 import java.util.List;
@@ -53,7 +53,7 @@ public class TensorFlowImageRecognizer {
      */
     public static TensorFlowImageRecognizer create(AssetManager assetManager) {
         TensorFlowImageRecognizer recognizer = new TensorFlowImageRecognizer();
-        recognizer.labels = LabelProvider.readLabels(assetManager);
+        recognizer.labels = ClassAttrProvider.newInstance(assetManager).getLabels();
         recognizer.inferenceInterface = new TensorFlowInferenceInterface(assetManager,
                 "file:///android_asset/" + MODEL_FILE);
         recognizer.outputSize = YOLOClassifier.getInstance()

@@ -160,7 +160,9 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        recognizer.close();
+        if (recognizer != null) {
+            recognizer.close();
+        }
     }
 
     private void renderAdditionalInformation(final Canvas canvas) {

@@ -17,11 +17,10 @@
  */
 package org.tensorflow.demo;
 
-import android.graphics.RectF;
-
 import org.apache.commons.math3.analysis.function.Sigmoid;
 import org.tensorflow.Operation;
 import org.tensorflow.demo.model.BoundingBox;
+import org.tensorflow.demo.model.BoxPosition;
 import org.tensorflow.demo.model.Recognition;
 import org.tensorflow.demo.util.math.ArgMax;
 import org.tensorflow.demo.util.math.SoftMax;
@@ -40,6 +39,7 @@ import java.util.Vector;
  * https://github.com/szaza/android-yolov2
  */
 public class YOLOClassifier {
+    private final static float OVERLAP_THRESHOLD = 0.5F;
     private final static double anchors[] = {1.08,1.19,  3.42,4.41,  6.63,11.38,  9.42,5.11,  16.62,10.52};
     private final static int SIZE = 13;
     private final static int MAX_RECOGNIZED_CLASSES = 13;
@@ -121,7 +121,7 @@ public class YOLOClassifier {
 
             if (confidenceInClass > THRESHOLD) {
                 predictionQueue.add(new Recognition(argMax.getIndex(), labels.get(argMax.getIndex()), (float) confidenceInClass,
-                        new RectF((float) (boundingBox.getX() - boundingBox.getWidth() / 2),
+                        new BoxPosition((float) (boundingBox.getX() - boundingBox.getWidth() / 2),
                                 (float) (boundingBox.getY() - boundingBox.getHeight() / 2),
                                 (float) boundingBox.getWidth(),
                                 (float) boundingBox.getHeight())));
@@ -132,18 +132,46 @@ public class YOLOClassifier {
     private List<Recognition> getRecognition(final PriorityQueue<Recognition> priorityQueue) {
         List<Recognition> recognitions = new ArrayList();
 
-        for (int i = 0; i < Math.min(priorityQueue.size(), MAX_RESULTS); ++i) {
-            recognitions.add(priorityQueue.poll());
+        if (priorityQueue.size() > 0) {
+            // Best recognition
+            Recognition bestRecognition = priorityQueue.poll();
+            recognitions.add(bestRecognition);
+
+            for (int i = 0; i < Math.min(priorityQueue.size(), MAX_RESULTS); ++i) {
+                Recognition recognition = priorityQueue.poll();
+                if (getIntersectionProportion(bestRecognition.getLocation(), recognition.getLocation()) < OVERLAP_THRESHOLD) {
+                    recognitions.add(recognition);
+                }
+            }
         }
 
         return recognitions;
+    }
+
+    private float getIntersectionProportion(BoxPosition primaryShape, BoxPosition secondaryShape) {
+        if (overlaps(primaryShape, secondaryShape)) {
+            float intersectionSurface = Math.max(0, Math.min(primaryShape.getRight(), secondaryShape.getRight()) - Math.max(primaryShape.getLeft(), secondaryShape.getLeft())) *
+                    Math.max(0, Math.min(primaryShape.getBottom(), secondaryShape.getBottom()) - Math.max(primaryShape.getTop(), secondaryShape.getTop()));
+
+            float surfacePrimary = Math.abs(primaryShape.getRight() - primaryShape.getLeft()) * Math.abs(primaryShape.getBottom() - primaryShape.getTop());
+
+            return intersectionSurface / surfacePrimary;
+        }
+
+        return 0f;
+
+    }
+
+    private boolean overlaps(BoxPosition primary, BoxPosition secondary) {
+        return primary.getLeft() < secondary.getRight() && primary.getRight() > secondary.getLeft()
+                && primary.getTop() < secondary.getBottom() && primary.getBottom() > secondary.getTop();
     }
 
     // Intentionally reversed to put high confidence at the head of the queue.
     private class RecognitionComparator implements Comparator<Recognition> {
         @Override
         public int compare(final Recognition recognition1, final Recognition recognition2) {
-            return Float.compare(recognition1.getConfidence(), recognition2.getConfidence());
+            return Float.compare(recognition2.getConfidence(), recognition1.getConfidence());
         }
     }
 }

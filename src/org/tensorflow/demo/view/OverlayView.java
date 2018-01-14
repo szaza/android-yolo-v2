@@ -25,7 +25,9 @@ import android.util.TypedValue;
 import android.view.View;
 
 import org.tensorflow.demo.Config;
+import org.tensorflow.demo.model.BoxPosition;
 import org.tensorflow.demo.model.Recognition;
+import org.tensorflow.demo.util.ClassAttrProvider;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -35,10 +37,10 @@ import java.util.List;
  * Modified by Zoltan Szabo
  */
 public class OverlayView extends View {
-    private final static float OVERLAP_THRESHOLD = 0.5F;
     private final Paint paint;
     private final List<DrawCallback> callbacks = new LinkedList();
     private List<Recognition> results;
+    private List<Integer> colors;
     private float resultsViewHeight;
 
     public OverlayView(final Context context, final AttributeSet attrs) {
@@ -50,6 +52,7 @@ public class OverlayView extends View {
                 15, getResources().getDisplayMetrics()));
         resultsViewHeight = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 112, getResources().getDisplayMetrics());
+        colors = ClassAttrProvider.newInstance(context.getAssets()).getColors();
     }
 
     public void addCallback(final DrawCallback callback) {
@@ -62,19 +65,14 @@ public class OverlayView extends View {
             callback.drawCallback(canvas);
         }
 
-        if (results != null && results.size() > 0) {
-            RectF bestBox = reCalcSize(results.get(0).getLocation());
-            drawBoundingBox(canvas, bestBox, "0:" + results.get(0).getTitle() + ":"
-                    + String.format("%.2f", results.get(0).getConfidence()));
-
-            if (results.size() > 1) {
-                for (int i = 1; i < results.size(); i++) {
-                    RectF box = reCalcSize(results.get(i).getLocation());
-                    if (getIntersectionProportion(bestBox, box) < OVERLAP_THRESHOLD) {
-                        drawBoundingBox(canvas, box, i + ":" +results.get(i).getTitle() + ":"
-                                + String.format("%.2f", results.get(0).getConfidence()));
-                    }
-                }
+        if (results != null) {
+            for (int i = 0; i < results.size(); i++) {
+                RectF box = reCalcSize(results.get(i).getLocation());
+                String title = results.get(i).getTitle() + ":"
+                        + String.format("%.2f", results.get(i).getConfidence());
+                paint.setColor(colors.get(results.get(i).getId()));
+                canvas.drawRect(box, paint);
+                canvas.drawText(title, box.left, box.top, paint);
             }
         }
     }
@@ -91,42 +89,20 @@ public class OverlayView extends View {
         void drawCallback(final Canvas canvas);
     }
 
-    private void drawBoundingBox(final Canvas canvas, RectF box, String title) {
-        canvas.drawRect(box, paint);
-        canvas.drawText(title, box.left, box.top, paint);
-    }
+    private RectF reCalcSize(BoxPosition rect) {
+        int padding = 5;
+        float overlayViewHeight = this.getHeight() - resultsViewHeight;
+        float sizeMultiplier = Math.min((float) this.getWidth() / (float) Config.INPUT_SIZE,
+                overlayViewHeight / (float) Config.INPUT_SIZE);
 
-    private float getIntersectionProportion(RectF primaryShape, RectF secondaryShape) {
-        if (overlaps(primaryShape, secondaryShape)) {
-            float intersectionSurface = Math.max(0, Math.min(primaryShape.right, secondaryShape.right) - Math.max(primaryShape.left, secondaryShape.left)) *
-                    Math.max(0, Math.min(primaryShape.bottom, secondaryShape.bottom) - Math.max(primaryShape.top, secondaryShape.top));
+        float offsetX = (this.getWidth() - Config.INPUT_SIZE * sizeMultiplier) / 2;
+        float offsetY = (overlayViewHeight - Config.INPUT_SIZE * sizeMultiplier) / 2 + resultsViewHeight;
 
-            float surfacePrimary = Math.abs(primaryShape.right - primaryShape.left) * Math.abs(primaryShape.bottom - primaryShape.top);
+        float left = Math.max(padding,sizeMultiplier * rect.getLeft() + offsetX);
+        float top = Math.max(offsetY + padding, sizeMultiplier * rect.getTop() + offsetY);
 
-            return intersectionSurface / surfacePrimary;
-        }
-
-        return 0f;
-
-    }
-
-    private boolean overlaps(RectF primary, RectF secondary) {
-        return primary.left < secondary.right && primary.right > secondary.left
-                && primary.top < secondary.bottom && primary.bottom > secondary.top;
-    }
-
-    private RectF reCalcSize(RectF rect) {
-        float sizeMultiplierX = (float) this.getWidth() / (float) Config.INPUT_SIZE;
-        float sizeMultiplierY = (this.getHeight() - resultsViewHeight) / (float) Config.INPUT_SIZE;
-
-        float width = rect.right * sizeMultiplierX;
-        float height = rect.bottom * sizeMultiplierY;
-
-        float left = sizeMultiplierX * rect.left;
-        float top = sizeMultiplierY * rect.top + resultsViewHeight;
-
-        float right = left + width;
-        float bottom = top + height;
+        float right = Math.min(rect.getRight() * sizeMultiplier, this.getWidth() - padding);
+        float bottom = Math.min(rect.getBottom() * sizeMultiplier + offsetY, this.getHeight() - padding);
 
         return new RectF(left, top, right, bottom);
     }

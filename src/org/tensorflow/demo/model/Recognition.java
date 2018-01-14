@@ -17,8 +17,6 @@
  */
 package org.tensorflow.demo.model;
 
-import android.graphics.RectF;
-
 /**
  * An immutable result returned by a recognizer describing what was recognized.
  * Created by Zoltan Szabo on 12/17/17.
@@ -32,10 +30,10 @@ public final class Recognition {
     private final Integer id;
     private final String title;
     private final Float confidence;
-    private RectF location;
+    private BoxPosition location;
 
     public Recognition(final Integer id, final String title,
-                       final Float confidence, final RectF location) {
+                       final Float confidence, final BoxPosition location) {
         this.id = id;
         this.title = title;
         this.confidence = confidence;
@@ -54,11 +52,11 @@ public final class Recognition {
         return confidence;
     }
 
-    public RectF getLocation() {
-        return new RectF(location);
+    public BoxPosition getLocation() {
+        return new BoxPosition(location);
     }
 
-    public void setLocation(RectF location) {
+    public void setLocation(BoxPosition location) {
         this.location = location;
     }
 
