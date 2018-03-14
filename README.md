@@ -17,5 +17,5 @@ How it works?
 ![android yolo v2 sample image](https://github.com/szaza/android-yolo-v2/blob/master/sample/android-yolo-v2.1.png)
 
 If you would like a more accurate solution, create a server application. See my next projects here:
-* https://github.com/szaza/tensorflow-java-yolo
-* https://github.com/szaza/java-tensorflow-spring
+* [Tensorflow Java Example server application with YOLOv2 model](https://github.com/szaza/tensorflow-java-yolo)
+* [Tensorflow Java Tutorial with Spring and Gradle](https://github.com/szaza/tensorflow-java-examples-spring)
