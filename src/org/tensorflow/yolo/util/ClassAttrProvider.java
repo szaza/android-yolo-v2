@@ -37,10 +37,11 @@ public final class ClassAttrProvider {
 
     private void init(final AssetManager assetManager) {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(assetManager.open(Config.LABEL_FILE)))) {
-            br.lines().forEach((line) -> {
+            String line;
+            while ((line = br.readLine()) != null) {
                 labels.add(line);
                 colors.add(convertClassNameToColor(line));
-            });
+            }
         } catch (IOException ex) {
             throw new RuntimeException("Problem reading label file!", ex);
         }
@@ -54,7 +55,7 @@ public final class ClassAttrProvider {
             rgb[i%3] += name[i];
         }
 
-        //Hue saturation
+        // Hue saturation
         for (int i=0; i<rgb.length; i++) {
             if (rgb[i] < 120) {
                 rgb[i] += 120;
