@@ -5,15 +5,15 @@ This android application uses YOLOv2 model for object detection. It uses tensorf
 
 Prerequirements:
 
-* Install the Android Studio;
+* Install the [Android Studio](https://developer.android.com/studio/index.html);
 * Android 6.0 (API level 23) or higher is required to run the demo application due to usage of Camera2 API;
 
 Compile and run the project:
 
 * Clone this repository with command: `git clone https://github.com/szaza/android-yolo-v2.git`;
-* Imort your project into the [Android Studio](https://developer.android.com/studio/index.html);
+* Imort your project into the Android Studio;
 * Optional: put your protobuff file and labels.txt into the assets folder, then change the settings properly in the [Config.java](https://github.com/szaza/android-yolo-v2/blob/master/src/org/tensorflow/yolo/Config.java) file;
-* Run the project from the Android Studio;
+* Run the project from Android Studio;
 
 How it works?
 
