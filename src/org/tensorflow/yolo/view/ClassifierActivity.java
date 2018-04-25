@@ -9,7 +9,10 @@ import android.media.Image;
 import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.SystemClock;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
@@ -21,6 +24,7 @@ import org.tensorflow.yolo.util.ImageUtils;
 import org.tensorflow.yolo.view.components.BorderedText;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 
 import static org.tensorflow.yolo.Config.INPUT_SIZE;
@@ -30,7 +34,7 @@ import static org.tensorflow.yolo.Config.LOGGING_TAG;
  * Classifier activity class
  * Modified by Zoltan Szabo
  */
-public class ClassifierActivity extends CameraActivity implements OnImageAvailableListener {
+public class ClassifierActivity extends CameraActivity implements OnImageAvailableListener, TextToSpeech.OnInitListener {
     private boolean MAINTAIN_ASPECT = true;
     private float TEXT_SIZE_DIP = 10;
 
@@ -48,6 +52,13 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     private OverlayView overlayView;
     private BorderedText borderedText;
     private long lastProcessingTimeMs;
+    private TextToSpeech textToSpeech;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        textToSpeech = new TextToSpeech(this, this);
+    }
 
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -124,7 +135,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
             if (image != null) {
                 image.close();
             }
-            Log.e("Exception: ", ex.getMessage());
+            Log.e(LOGGING_TAG, ex.getMessage());
             return;
         }
 
@@ -136,9 +147,23 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
             final List<Recognition> results = recognizer.recognizeImage(croppedBitmap);
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
             overlayView.setResults(results);
+            speak(results);
             requestRender();
             computing = false;
         });
+    }
+
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            int result = textToSpeech.setLanguage(Locale.US);
+            if (result == TextToSpeech.LANG_MISSING_DATA
+                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e(LOGGING_TAG, "Text to speech error: This Language is not supported");
+            }
+        } else {
+            Log.e(LOGGING_TAG, "Text to speech: Initilization Failed!");
+        }
     }
 
     @Override
@@ -146,6 +171,17 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
         super.onDestroy();
         if (recognizer != null) {
             recognizer.close();
+        }
+    }
+
+    private void speak(List<Recognition> results) {
+        if (!results.isEmpty()) {
+            String text = results.get(0).getTitle();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+            } else {
+                textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+            }
         }
     }
 
