@@ -3,7 +3,6 @@ package org.tensorflow.yolo.view;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.media.Image.Plane;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,8 +14,6 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.tensorflow.yolo.R;
-
-import java.nio.ByteBuffer;
 
 import static org.tensorflow.yolo.Config.LOGGING_TAG;
 
@@ -123,19 +120,6 @@ public abstract class CameraActivity extends Activity implements OnImageAvailabl
                 .beginTransaction()
                 .replace(R.id.container, cameraConnectionFragment)
                 .commit();
-    }
-
-    protected void fillBytes(final Plane[] planes, final byte[][] yuvBytes) {
-        // Because of the variable row stride it's not possible to know in
-        // advance the actual necessary dimensions of the yuv planes.
-        for (int i = 0; i < planes.length; ++i) {
-            final ByteBuffer buffer = planes[i].getBuffer();
-            if (yuvBytes[i] == null) {
-                Log.d(LOGGING_TAG, String.format("Initializing buffer %d at size %d", i, buffer.capacity()));
-                yuvBytes[i] = new byte[buffer.capacity()];
-            }
-            buffer.get(yuvBytes[i]);
-        }
     }
 
     public void requestRender() {

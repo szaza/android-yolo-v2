@@ -6,13 +6,9 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.media.Image;
-import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
-import android.os.Build;
-import android.os.Bundle;
 import android.os.SystemClock;
-import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.util.Size;
 import android.util.TypedValue;
@@ -24,7 +20,6 @@ import org.tensorflow.yolo.util.ImageUtils;
 import org.tensorflow.yolo.view.components.BorderedText;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Vector;
 
 import static org.tensorflow.yolo.Config.INPUT_SIZE;
@@ -34,7 +29,7 @@ import static org.tensorflow.yolo.Config.LOGGING_TAG;
  * Classifier activity class
  * Modified by Zoltan Szabo
  */
-public class ClassifierActivity extends CameraActivity implements OnImageAvailableListener, TextToSpeech.OnInitListener {
+public class ClassifierActivity extends TextToSpeechActivity implements OnImageAvailableListener {
     private boolean MAINTAIN_ASPECT = true;
     private float TEXT_SIZE_DIP = 10;
 
@@ -42,23 +37,13 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     private Integer sensorOrientation;
     private int previewWidth = 0;
     private int previewHeight = 0;
-    private byte[][] yuvBytes;
-    private int[] rgbBytes = null;
-    private Bitmap rgbFrameBitmap = null;
     private Bitmap croppedBitmap = null;
     private boolean computing = false;
     private Matrix frameToCropTransform;
-    private Matrix cropToFrameTransform;
+
     private OverlayView overlayView;
     private BorderedText borderedText;
     private long lastProcessingTimeMs;
-    private TextToSpeech textToSpeech;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        textToSpeech = new TextToSpeech(this, this);
-    }
 
     @Override
     public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -81,17 +66,12 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
         sensorOrientation = rotation + screenOrientation;
 
         Log.i(LOGGING_TAG, String.format("Initializing at size %dx%d", previewWidth, previewHeight));
-        rgbBytes = new int[previewWidth * previewHeight];
-        rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Config.ARGB_8888);
+
         croppedBitmap = Bitmap.createBitmap(INPUT_SIZE, INPUT_SIZE, Config.ARGB_8888);
 
         frameToCropTransform = ImageUtils.getTransformationMatrix(previewWidth, previewHeight,
                 INPUT_SIZE, INPUT_SIZE, sensorOrientation, MAINTAIN_ASPECT);
-
-        cropToFrameTransform = new Matrix();
-        frameToCropTransform.invert(cropToFrameTransform);
-
-        yuvBytes = new byte[3][];
+        frameToCropTransform.invert(new Matrix());
 
         addCallback((final Canvas canvas) -> renderAdditionalInformation(canvas));
     }
@@ -111,36 +91,16 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                 image.close();
                 return;
             }
+
             computing = true;
-
-            final Plane[] planes = image.getPlanes();
-            fillBytes(planes, yuvBytes);
-
-            final int yRowStride = planes[0].getRowStride();
-            final int uvRowStride = planes[1].getRowStride();
-            final int uvPixelStride = planes[1].getPixelStride();
-            ImageUtils.convertYUV420ToARGB8888(
-                    yuvBytes[0],
-                    yuvBytes[1],
-                    yuvBytes[2],
-                    previewWidth,
-                    previewHeight,
-                    yRowStride,
-                    uvRowStride,
-                    uvPixelStride,
-                    rgbBytes);
-
+            fillCroppedBitmap(image);
             image.close();
         } catch (final Exception ex) {
             if (image != null) {
                 image.close();
             }
             Log.e(LOGGING_TAG, ex.getMessage());
-            return;
         }
-
-        rgbFrameBitmap.setPixels(rgbBytes, 0, previewWidth, 0, 0, previewWidth, previewHeight);
-        new Canvas(croppedBitmap).drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
 
         runInBackground(() -> {
             final long startTime = SystemClock.uptimeMillis();
@@ -153,17 +113,11 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
         });
     }
 
-    @Override
-    public void onInit(int status) {
-        if (status == TextToSpeech.SUCCESS) {
-            int result = textToSpeech.setLanguage(Locale.US);
-            if (result == TextToSpeech.LANG_MISSING_DATA
-                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Log.e(LOGGING_TAG, "Text to speech error: This Language is not supported");
-            }
-        } else {
-            Log.e(LOGGING_TAG, "Text to speech: Initilization Failed!");
-        }
+    private void fillCroppedBitmap(final Image image) {
+            Bitmap rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Config.ARGB_8888);
+            rgbFrameBitmap.setPixels(ImageUtils.convertYUVToARGB(image, previewWidth, previewHeight),
+                    0, previewWidth, 0, 0, previewWidth, previewHeight);
+            new Canvas(croppedBitmap).drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
     }
 
     @Override
@@ -171,17 +125,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
         super.onDestroy();
         if (recognizer != null) {
             recognizer.close();
-        }
-    }
-
-    private void speak(List<Recognition> results) {
-        if (!results.isEmpty()) {
-            String text = results.get(0).getTitle();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
-            } else {
-                textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-            }
         }
     }
 
