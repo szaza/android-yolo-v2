@@ -1,6 +1,9 @@
 package org.tensorflow.yolo.util;
 
 import android.graphics.Matrix;
+import android.media.Image;
+
+import java.nio.ByteBuffer;
 
 /**
  * Utility class for manipulating images.
@@ -12,8 +15,29 @@ public class ImageUtils {
     // are normalized to eight bits.
     static final int kMaxChannelValue = 262143;
 
-    public static void convertYUV420ToARGB8888(byte[] yData, byte[] uData, byte[] vData, int width, int height,
-                                               int yRowStride, int uvRowStride, int uvPixelStride, int[] out) {
+    public static int[] convertYUVToARGB(final Image image, final int previewWidth, final int previewHeight) {
+        final Image.Plane[] planes = image.getPlanes();
+        byte[][] yuvBytes = fillBytes(planes);
+        return ImageUtils.convertYUV420ToARGB8888(yuvBytes[0], yuvBytes[1], yuvBytes[2], previewWidth,
+                previewHeight, planes[0].getRowStride(), planes[1].getRowStride(), planes[1].getPixelStride());
+    }
+
+    private static byte[][] fillBytes(final Image.Plane[] planes) {
+        byte[][] yuvBytes = new byte[3][];
+        for (int i = 0; i < planes.length; ++i) {
+            final ByteBuffer buffer = planes[i].getBuffer();
+            if (yuvBytes[i] == null) {
+                yuvBytes[i] = new byte[buffer.capacity()];
+            }
+            buffer.get(yuvBytes[i]);
+        }
+
+        return yuvBytes;
+    }
+
+    private static int[] convertYUV420ToARGB8888(byte[] yData, byte[] uData, byte[] vData, int width, int height,
+                                                 int yRowStride, int uvRowStride, int uvPixelStride) {
+        int[] out = new int[width * height];
         int i = 0;
         for (int y = 0; y < height; y++) {
             int pY = yRowStride * y;
@@ -29,6 +53,8 @@ public class ImageUtils {
                         convertByteToInt(vData, pV + uv_offset));
             }
         }
+
+        return out;
     }
 
     private static int convertByteToInt(byte[] arr, int pos) {
@@ -56,13 +82,9 @@ public class ImageUtils {
         return 0xff000000 | (nR << 16) | (nG << 8) | nB;
     }
 
-    public static Matrix getTransformationMatrix(
-            final int srcWidth,
-            final int srcHeight,
-            final int dstWidth,
-            final int dstHeight,
-            final int applyRotation,
-            final boolean maintainAspectRatio) {
+    public static Matrix getTransformationMatrix(final int srcWidth, final int srcHeight,
+                                                 final int dstWidth, final int dstHeight,
+                                                 final int applyRotation, final boolean maintainAspectRatio) {
         final Matrix matrix = new Matrix();
 
         if (applyRotation != 0) {
