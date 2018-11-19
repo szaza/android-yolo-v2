@@ -227,7 +227,7 @@ public class CameraConnectionFragment extends Fragment {
         }
 
         // Pick the smallest of those, assuming we found any
-        return (bigEnough.size() > 0) ? Collections.min(bigEnough, new CompareSizesByArea()) : choices[0];
+        return (bigEnough.size() > 0) ? Collections.max(bigEnough, new CompareSizesByArea()) : choices[0];
     }
 
     /**
@@ -273,7 +273,7 @@ public class CameraConnectionFragment extends Fragment {
                 // We fit the aspect ratio of TextureView to the size of preview we picked.
                 final int orientation = getResources().getConfiguration().orientation;
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    textureView.setAspectRatio(previewSize.getWidth(), previewSize.getHeight());
+                    textureView.setAspectRatio(1920, 1080);
                 } else {
                     textureView.setAspectRatio(previewSize.getHeight(), previewSize.getWidth());
                 }
