@@ -37,7 +37,7 @@ public class OverlayView extends View {
                 15, getResources().getDisplayMetrics()));
         resultsViewHeight = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 112, getResources().getDisplayMetrics());
-        colors = ClassAttrProvider.newInstance(context.getAssets()).getColors();
+        colors = ClassAttrProvider.getInstance(context.getAssets()).getColors();
     }
 
     public void addCallback(final DrawCallback callback) {
@@ -76,12 +76,12 @@ public class OverlayView extends View {
 
     private RectF reCalcSize(BoxPosition rect) {
         int padding = 5;
-        float overlayViewHeight = this.getHeight() - resultsViewHeight;
+        float overlayViewHeight = this.getHeight();
         float sizeMultiplier = Math.min((float) this.getWidth() / (float) Config.INPUT_SIZE,
                 overlayViewHeight / (float) Config.INPUT_SIZE);
 
         float offsetX = (this.getWidth() - Config.INPUT_SIZE * sizeMultiplier) / 2;
-        float offsetY = (overlayViewHeight - Config.INPUT_SIZE * sizeMultiplier) / 2 + resultsViewHeight;
+        float offsetY = (overlayViewHeight - Config.INPUT_SIZE * sizeMultiplier) / 2;
 
         float left = Math.max(padding,sizeMultiplier * rect.getLeft() + offsetX);
         float top = Math.max(offsetY + padding, sizeMultiplier * rect.getTop() + offsetY);

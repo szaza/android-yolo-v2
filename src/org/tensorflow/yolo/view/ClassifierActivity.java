@@ -16,6 +16,7 @@ import android.util.TypedValue;
 import org.tensorflow.yolo.R;
 import org.tensorflow.yolo.TensorFlowImageRecognizer;
 import org.tensorflow.yolo.model.Recognition;
+import org.tensorflow.yolo.util.ClassAttrProvider;
 import org.tensorflow.yolo.util.ImageUtils;
 import org.tensorflow.yolo.view.components.BorderedText;
 
@@ -63,14 +64,12 @@ public class ClassifierActivity extends TextToSpeechActivity implements OnImageA
         Log.i(LOGGING_TAG, String.format("Sensor orientation: %d, Screen orientation: %d",
                 rotation, screenOrientation));
 
-        sensorOrientation = rotation + screenOrientation;
-
         Log.i(LOGGING_TAG, String.format("Initializing at size %dx%d", previewWidth, previewHeight));
 
         croppedBitmap = Bitmap.createBitmap(INPUT_SIZE, INPUT_SIZE, Config.ARGB_8888);
 
         frameToCropTransform = ImageUtils.getTransformationMatrix(previewWidth, previewHeight,
-                INPUT_SIZE, INPUT_SIZE, sensorOrientation, MAINTAIN_ASPECT);
+                INPUT_SIZE, INPUT_SIZE, 0, MAINTAIN_ASPECT);
         frameToCropTransform.invert(new Matrix());
 
         addCallback((final Canvas canvas) -> renderAdditionalInformation(canvas));
@@ -138,7 +137,6 @@ public class ClassifierActivity extends TextToSpeechActivity implements OnImageA
 
         lines.add("Frame: " + previewWidth + "x" + previewHeight);
         lines.add("View: " + canvas.getWidth() + "x" + canvas.getHeight());
-        lines.add("Rotation: " + sensorOrientation);
         lines.add("Inference time: " + lastProcessingTimeMs + "ms");
 
         borderedText.drawLines(canvas, 10, 10, lines);

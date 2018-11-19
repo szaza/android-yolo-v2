@@ -38,7 +38,7 @@ public class TensorFlowImageRecognizer {
      */
     public static TensorFlowImageRecognizer create(AssetManager assetManager) {
         TensorFlowImageRecognizer recognizer = new TensorFlowImageRecognizer();
-        recognizer.labels = ClassAttrProvider.newInstance(assetManager).getLabels();
+        recognizer.labels = ClassAttrProvider.getInstance(assetManager).getLabels();
         recognizer.inferenceInterface = new TensorFlowInferenceInterface(assetManager,
                 "file:///android_asset/" + MODEL_FILE);
         recognizer.outputSize = YOLOClassifier.getInstance()

@@ -27,7 +27,7 @@ public final class ClassAttrProvider {
         init(assetManager);
     }
 
-    public static ClassAttrProvider newInstance(final AssetManager assetManager) {
+    public static ClassAttrProvider getInstance(final AssetManager assetManager) {
         if (instance == null) {
             instance = new ClassAttrProvider(assetManager);
         }
