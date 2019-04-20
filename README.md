@@ -27,3 +27,10 @@ How it works?
 If you would like a more accurate solution, create a server application. See my related projects here:
 * [Tensorflow Example Java API](https://sites.google.com/view/tensorflow-example-java-api/home)
 * [Tensorflow Java example server application with YOLOv2 model](https://sites.google.com/view/tensorflow-example-java-api/tensorflow-java-api-with-spring-framework)
+
+## News about YoloV3 support
+
+The current solution doesn't support the YoloV3 model and unfortunately, I do not have time to implement it, however I would be very happy if I could help to implement and I could review a PR with this feture. 
+For this reason I've started a new branch here: https://github.com/szaza/tensorflow-java-examples-spring/tree/feature/add-yolov3-support; If you are interested in this feature and you would like to be a collabortor, please add a comment for this thread: https://github.com/szaza/tensorflow-java-examples-spring/issues/2;
+
+Many-many thank for any support!
