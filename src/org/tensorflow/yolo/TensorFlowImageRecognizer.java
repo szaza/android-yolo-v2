@@ -4,11 +4,10 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
-import org.tensorflow.yolo.model.Recognition;
+import org.tensorflow.yolo.model.PostProcessingOutcome;
 import org.tensorflow.yolo.util.ClassAttrProvider;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Vector;
 
 import static org.tensorflow.yolo.Config.IMAGE_MEAN;
@@ -46,7 +45,7 @@ public class TensorFlowImageRecognizer {
         return recognizer;
     }
 
-    public List<Recognition> recognizeImage(final Bitmap bitmap) {
+    public PostProcessingOutcome recognizeImage(final Bitmap bitmap) {
         return YOLOClassifier.getInstance().classifyImage(runTensorFlow(bitmap), labels);
     }
 
