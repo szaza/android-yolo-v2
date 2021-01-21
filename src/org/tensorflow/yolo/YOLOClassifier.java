@@ -1,9 +1,12 @@
 package org.tensorflow.yolo;
 
+import android.os.SystemClock;
+
 import org.apache.commons.math3.analysis.function.Sigmoid;
 import org.tensorflow.Operation;
 import org.tensorflow.yolo.model.BoundingBox;
 import org.tensorflow.yolo.model.BoxPosition;
+import org.tensorflow.yolo.model.PostProcessingOutcome;
 import org.tensorflow.yolo.model.Recognition;
 import org.tensorflow.yolo.util.math.ArgMax;
 import org.tensorflow.yolo.util.math.SoftMax;
@@ -57,9 +60,10 @@ public class YOLOClassifier {
      * @param tensorFlowOutput output from the tensorflow, it is a 13x13x125 tensor
      * 125 = (numClass +  Tx, Ty, Tw, Th, To) * 5 - cause we have 5 boxes per each cell
      * @param labels a string vector with the labels
-     * @return a list of recognition objects
+     * @return PostProcessingOutcome: contains a list of recognition objects and time taken for post-processing
      */
-    public List<Recognition> classifyImage(final float[] tensorFlowOutput, final Vector<String> labels) {
+    public PostProcessingOutcome classifyImage(final float[] tensorFlowOutput, final Vector<String> labels) {
+        final long startTime = SystemClock.uptimeMillis();
         int numClass = (int) (tensorFlowOutput.length / (Math.pow(SIZE,2) * NUMBER_OF_BOUNDING_BOX) - 5);
         BoundingBox[][][] boundingBoxPerCell = new BoundingBox[SIZE][SIZE][NUMBER_OF_BOUNDING_BOX];
         PriorityQueue<Recognition> priorityQueue = new PriorityQueue<>(MAX_RECOGNIZED_CLASSES, new RecognitionComparator());
@@ -74,8 +78,9 @@ public class YOLOClassifier {
                 }
             }
         }
-
-        return getRecognition(priorityQueue);
+        List<Recognition> results = getRecognition(priorityQueue);
+        final long endTime = SystemClock.uptimeMillis() - startTime;
+        return new PostProcessingOutcome(endTime, results);
     }
 
     private BoundingBox getModel(final float[] tensorFlowOutput, int cx, int cy, int b, int numClass, int offset) {
